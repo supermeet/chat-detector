@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Huddle · group chat</title>
+<link rel="stylesheet" href="room.css">
+</head>
+<body>
+<!-- A simulated group chat for the SafeSphere Guard extension demo. It only plays scripted messages;
+     it never tells the extension what is harmful. DOM contract: docs/superpowers/plans/2026-10-29-chatroom-extension.md -->
+<header class="bar">
+  <div class="brand">Huddle <span class="sim">simulated chatroom</span></div>
+  <div class="controls">
+    <select id="scenario" aria-label="Scenario"></select>
+    <select id="mode" aria-label="Mode">
+      <option value="scripted">Scripted</option>
+      <option value="live">Live typing</option>
+    </select>
+    <select id="speed" aria-label="Speed">
+      <option value="normal">Normal</option>
+      <option value="slow">Slow</option>
+      <option value="fast">Fast</option>
+    </select>
+    <button id="start" type="button">Start</button>
+    <button id="reset" type="button" class="ghost">Reset</button>
+  </div>
+</header>
+<main id="room" data-room="" data-self-name="" data-self-id="" data-state="idle">
+  <aside class="members">
+    <h2 id="room-name">Room</h2>
+    <p class="muted" id="scenario-title"></p>
+    <h3>Members</h3>
+    <ul id="member-list"></ul>
+  </aside>
+  <section class="chat">
+    <ol id="messages" aria-live="polite"></ol>
+    <div id="status" class="status"></div>
+    <form id="composer" autocomplete="off">
+      <div id="replying" class="replying" hidden><span></span><button type="button" id="cancel-reply" aria-label="Cancel reply">×</button></div>
+      <div class="row">
+        <input id="input" type="text" placeholder="Message the room…" aria-label="Message">
+        <button id="send" type="submit">Send</button>
+      </div>
+    </form>
+  </section>
+</main>
+<script src="room.js"></script>
+</body>
+</html>

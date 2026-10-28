@@ -11,6 +11,7 @@ from typing import Optional, Union
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
 
 from . import conclusion, deepfake, importers, linking, media, report
 from .config import BACKEND_DIR, settings
@@ -402,16 +403,12 @@ def demo_list():
     return [dict(name=k, title=v["title"], events=len(v["events"])) for k, v in _scenarios().items()]
 
 
-@app.get("/demo/scenarios/{name}")
-def demo_get(name: str):
-    """Events with real timestamps (ending now), ready to POST one by one to /ingest/notification."""
-    sc = _scenarios().get(name)
-    if sc is None:
-        raise HTTPException(404, "scenario not found")
-    # each event has "t": "<days offset> HH:MM", wall-clock time so night/day patterns are what the script says
+def _stamp(events):
+    """Each event has "t": "<days offset> HH:MM", wall-clock time so night/day patterns are what the script says.
+    Returns the events (without "t") sorted, with ISO timestamps on a clock that ends no later than now."""
     today = utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     stamped = []
-    for e in sc["events"]:
+    for e in events:
         day, hm = e["t"].split()
         h, m = (int(x) for x in hm.split(":"))
         stamped.append((today + timedelta(days=int(day), hours=h, minutes=m), e))
@@ -420,9 +417,20 @@ def demo_get(name: str):
     for ts, e in sorted(stamped, key=lambda x: x[0]):
         ev = {k: v for k, v in e.items() if k != "t"}
         ev["timestamp"] = (ts - shift).isoformat()
-        if sc.get("relationship"):
-            ev.setdefault("relationship", sc["relationship"])
         out.append(ev)
+    return out
+
+
+@app.get("/demo/scenarios/{name}")
+def demo_get(name: str):
+    """Events with real timestamps (ending now), ready to POST one by one to /ingest/notification."""
+    sc = _scenarios().get(name)
+    if sc is None:
+        raise HTTPException(404, "scenario not found")
+    out = _stamp(sc["events"])
+    if sc.get("relationship"):
+        for ev in out:
+            ev.setdefault("relationship", sc["relationship"])
     return dict(name=name, title=sc["title"], relationship=sc.get("relationship"), events=out)
 
 
@@ -430,6 +438,33 @@ def demo_get(name: str):
 def demo_load(name: str):
     events = demo_get(name)["events"]
     return ingest([Notification(**e) for e in events])
+
+
+# ---------------------------------------------------------------- simulated live chatroom (extension PoC)
+ROOMS_FILE = BACKEND_DIR / "demo" / "rooms.json"
+
+
+def _rooms():
+    return json.loads(ROOMS_FILE.read_text(encoding="utf-8"))
+
+
+@app.get("/demo/rooms")
+def rooms_list():
+    return [dict(name=k, title=v["title"], room=v["room"], events=len(v["events"])) for k, v in _rooms().items()]
+
+
+@app.get("/demo/rooms/{name}")
+def rooms_get(name: str):
+    """A chatroom script for chatroom/ to play. The page only renders it; judgement comes from the extension's
+    calls to /ingest/notification."""
+    sc = _rooms().get(name)
+    if sc is None:
+        raise HTTPException(404, "room scenario not found")
+    return dict(sc, name=name, events=_stamp(sc["events"]))
+
+
+if settings.CHATROOM_DIR.exists():
+    app.mount("/chatroom", StaticFiles(directory=settings.CHATROOM_DIR, html=True), name="chatroom")
 
 
 # ---------------------------------------------------------------- privacy

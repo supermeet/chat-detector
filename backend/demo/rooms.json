@@ -1,0 +1,420 @@
+{
+  "pile_on": {
+    "title": "Pile-on: four classmates gang up on you",
+    "room": "Class 12-B",
+    "self": {
+      "id": "priya",
+      "name": "Priya"
+    },
+    "members": {
+      "rohan": "Rohan K",
+      "sneha": "Sneha",
+      "kabir": "Kabir",
+      "ishaan": "Ishaan",
+      "aman": "Aman",
+      "kunal": "Kunal"
+    },
+    "events": [
+      {
+        "t": "-1 18:55",
+        "from": "kunal",
+        "text": "kal ka test kitne baje hai?"
+      },
+      {
+        "t": "-1 18:56",
+        "from": "aman",
+        "text": "10 baje, room 204",
+        "reply_to": "kunal"
+      },
+      {
+        "t": "-1 19:00",
+        "from": "rohan",
+        "text": "@Priya full chapri hai tu"
+      },
+      {
+        "t": "-1 19:01",
+        "from": "sneha",
+        "text": "@Priya shakal dekhi hai apni"
+      },
+      {
+        "t": "-1 19:02",
+        "from": "kabir",
+        "text": "@Priya nobody likes you"
+      },
+      {
+        "t": "-1 19:03",
+        "from": "rohan",
+        "text": "loser",
+        "reply_to": "self"
+      },
+      {
+        "t": "-1 19:05",
+        "from": "self",
+        "text": "please stop",
+        "reply_to": "rohan"
+      },
+      {
+        "t": "-1 19:06",
+        "from": "sneha",
+        "text": "@Priya moti kahin ki"
+      },
+      {
+        "t": "-1 19:07",
+        "from": "kabir",
+        "text": "@Priya everyone laughs at you"
+      },
+      {
+        "t": "-1 19:08",
+        "from": "ishaan",
+        "text": "@Priya go cry somewhere"
+      },
+      {
+        "t": "-1 19:09",
+        "from": "rohan",
+        "text": "@Priya tu kisi kaam ki nahi"
+      },
+      {
+        "t": "-1 19:12",
+        "from": "aman",
+        "text": "guys kal ka syllabus bhej do koi"
+      },
+      {
+        "t": "0 15:00",
+        "from": "sneha",
+        "text": "@Priya kitni dumb hai tu"
+      },
+      {
+        "t": "0 15:02",
+        "from": "ishaan",
+        "text": "useless",
+        "reply_to": "self"
+      },
+      {
+        "t": "0 15:03",
+        "from": "kabir",
+        "text": "@Priya cheap lagti hai"
+      },
+      {
+        "t": "0 15:05",
+        "from": "self",
+        "text": "leave me alone",
+        "reply_to": "kabir"
+      },
+      {
+        "t": "0 15:06",
+        "from": "rohan",
+        "text": "@Priya kaali kalooti"
+      },
+      {
+        "t": "0 15:07",
+        "from": "kunal",
+        "text": "notes mil gaye thanks",
+        "reply_to": "aman"
+      }
+    ]
+  },
+  "banter": {
+    "title": "Friends roasting each other: should stay quiet",
+    "room": "Class 12-B",
+    "self": {
+      "id": "priya",
+      "name": "Priya"
+    },
+    "members": {
+      "aman": "Aman",
+      "kunal": "Kunal",
+      "sneha": "Sneha"
+    },
+    "events": [
+      {
+        "t": "-1 16:00",
+        "from": "aman",
+        "text": "@Priya abe saale kal ka match dekha 😂"
+      },
+      {
+        "t": "-1 16:02",
+        "from": "self",
+        "text": "haha chal be",
+        "reply_to": "aman"
+      },
+      {
+        "t": "-1 16:03",
+        "from": "kunal",
+        "text": "@Priya chup kar be kamine"
+      },
+      {
+        "t": "-1 16:04",
+        "from": "self",
+        "text": "😂😂 noob",
+        "reply_to": "kunal"
+      },
+      {
+        "t": "-1 16:05",
+        "from": "sneha",
+        "text": "koi canteen chal raha hai?"
+      },
+      {
+        "t": "-1 16:06",
+        "from": "aman",
+        "text": "bhai tu pagal hai",
+        "reply_to": "self"
+      },
+      {
+        "t": "-1 16:07",
+        "from": "self",
+        "text": "lol",
+        "reply_to": "aman"
+      },
+      {
+        "t": "-1 17:00",
+        "from": "kunal",
+        "text": "@Priya saale treat de result aaya"
+      },
+      {
+        "t": "-1 17:02",
+        "from": "self",
+        "text": "pakka, kal canteen 😂",
+        "reply_to": "kunal"
+      },
+      {
+        "t": "-1 17:03",
+        "from": "aman",
+        "text": "haha kamine",
+        "reply_to": "self"
+      },
+      {
+        "t": "-1 17:05",
+        "from": "self",
+        "text": "tu pagal hai",
+        "reply_to": "aman"
+      },
+      {
+        "t": "0 14:00",
+        "from": "kunal",
+        "text": "@Priya noob hai tu"
+      },
+      {
+        "t": "0 14:01",
+        "from": "self",
+        "text": "shut up 😂",
+        "reply_to": "kunal"
+      },
+      {
+        "t": "0 14:03",
+        "from": "aman",
+        "text": "@Priya abe gadhe"
+      },
+      {
+        "t": "0 14:04",
+        "from": "self",
+        "text": "hahaha",
+        "reply_to": "aman"
+      },
+      {
+        "t": "0 14:05",
+        "from": "sneha",
+        "text": "aaj practical cancel hai btw"
+      }
+    ]
+  },
+  "singled_out": {
+    "title": "Singled out: one classmate won't stop after you say no",
+    "room": "Class 12-B",
+    "self": {
+      "id": "priya",
+      "name": "Priya"
+    },
+    "members": {
+      "vikram": "Vikram",
+      "aman": "Aman",
+      "sneha": "Sneha"
+    },
+    "events": [
+      {
+        "t": "-4 10:00",
+        "from": "aman",
+        "text": "lecture shift ho gaya 11 baje"
+      },
+      {
+        "t": "-4 10:01",
+        "from": "vikram",
+        "text": "@Priya hi"
+      },
+      {
+        "t": "-4 10:02",
+        "from": "vikram",
+        "text": "@Priya you're so pretty"
+      },
+      {
+        "t": "-4 10:04",
+        "from": "self",
+        "text": "hmm",
+        "reply_to": "vikram"
+      },
+      {
+        "t": "-3 00:40",
+        "from": "vikram",
+        "text": "reply na",
+        "reply_to": "self"
+      },
+      {
+        "t": "-3 00:41",
+        "from": "vikram",
+        "text": "@Priya why are you online but not replying"
+      },
+      {
+        "t": "-3 00:42",
+        "from": "vikram",
+        "text": "??",
+        "reply_to": "self"
+      },
+      {
+        "t": "-3 00:44",
+        "from": "vikram",
+        "text": "@Priya answer me"
+      },
+      {
+        "t": "-3 09:30",
+        "from": "self",
+        "text": "please stop messaging me",
+        "reply_to": "vikram"
+      },
+      {
+        "t": "-3 09:31",
+        "from": "vikram",
+        "text": "itna attitude kyu",
+        "reply_to": "self"
+      },
+      {
+        "t": "-3 09:40",
+        "from": "sneha",
+        "text": "assignment ki last date kya hai?"
+      },
+      {
+        "t": "-2 01:10",
+        "from": "vikram",
+        "text": "@Priya ek baar baat kar lo"
+      },
+      {
+        "t": "-2 01:12",
+        "from": "vikram",
+        "text": "@Priya hello??"
+      },
+      {
+        "t": "-2 01:13",
+        "from": "vikram",
+        "text": "@Priya please reply"
+      },
+      {
+        "t": "-2 01:15",
+        "from": "vikram",
+        "text": "ignore mat karo",
+        "reply_to": "self"
+      },
+      {
+        "t": "-2 01:20",
+        "from": "vikram",
+        "text": "@Priya i'll keep texting till you reply"
+      },
+      {
+        "t": "-1 13:00",
+        "from": "vikram",
+        "text": "@Priya saw you outside college today"
+      },
+      {
+        "t": "-1 13:01",
+        "from": "vikram",
+        "text": "@Priya who were you with"
+      },
+      {
+        "t": "-1 13:20",
+        "from": "self",
+        "text": "i said no",
+        "reply_to": "vikram"
+      },
+      {
+        "t": "0 00:30",
+        "from": "vikram",
+        "text": "kab tak ignore karogi",
+        "reply_to": "self"
+      },
+      {
+        "t": "0 00:31",
+        "from": "vikram",
+        "text": "@Priya why are you avoiding me"
+      },
+      {
+        "t": "0 00:33",
+        "from": "vikram",
+        "text": "@Priya tum kiske saath thi"
+      },
+      {
+        "t": "0 00:35",
+        "from": "vikram",
+        "text": "@Priya i know where you live"
+      }
+    ]
+  },
+  "sextortion": {
+    "title": "Stranger in the room: flirting, a photo, then a money demand",
+    "room": "Class 12-B",
+    "self": {
+      "id": "priya",
+      "name": "Priya"
+    },
+    "members": {
+      "priv_x_771": "priv_x_771",
+      "aman": "Aman"
+    },
+    "events": [
+      {
+        "t": "0 19:00",
+        "from": "aman",
+        "text": "kal ka plan final?"
+      },
+      {
+        "t": "0 19:01",
+        "from": "priv_x_771",
+        "text": "@Priya hi"
+      },
+      {
+        "t": "0 19:02",
+        "from": "priv_x_771",
+        "text": "@Priya you're so pretty"
+      },
+      {
+        "t": "0 19:10",
+        "from": "priv_x_771",
+        "text": "@Priya video call pe aao akele"
+      },
+      {
+        "t": "0 19:20",
+        "from": "self",
+        "text": "no",
+        "reply_to": "priv_x_771"
+      },
+      {
+        "t": "0 20:00",
+        "from": "priv_x_771",
+        "media": "image",
+        "reply_to": "self"
+      },
+      {
+        "t": "0 20:01",
+        "from": "priv_x_771",
+        "text": "your morphed photo is ready",
+        "reply_to": "self"
+      },
+      {
+        "t": "0 20:02",
+        "from": "priv_x_771",
+        "text": "@Priya 10k bhej warna ye photo sabko bhej dunga"
+      },
+      {
+        "t": "0 21:00",
+        "from": "priv_x_771",
+        "text": "@Priya upi kar warna insta pe daal dunga"
+      }
+    ]
+  }
+}

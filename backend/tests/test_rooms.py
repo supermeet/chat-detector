@@ -72,3 +72,83 @@ def test_room_reset_clears_rooms():
     r = client.post("/ingest/notification", json=PILE_ON[:3]).json()
     room = next(p for p in r["people"] if p["is_room"])
     assert len(room["accounts"]) == 3
+
+
+# ---------------------------------------------------------------- room scenarios (what the extension would send)
+MENTION = r"@{name}(?!\w)"
+
+
+def to_notifications(sc):
+    """Python mirror of extension/lib/core.js toNotification: only messages aimed at the user, plus the user's own
+    messages attributed to the member they answer (or the last member who targeted them)."""
+    import re
+    self_id, self_name, members = sc["self"]["id"], sc["self"]["name"], sc["members"]
+    pat = re.compile(MENTION.format(name=re.escape(self_name)) + r"[,:]?\s*", re.I)
+    last, out = None, []
+    for e in sc["events"]:
+        text = e.get("text")
+        if e.get("media"):
+            text = {"image": "📷 Photo", "video": "🎥 Video", "audio": "🎤 Voice message"}[e["media"]]
+        base = dict(app="web", timestamp=e["timestamp"], room=sc["room"], relationship="acquaintance",
+                    media_type=e.get("media"))
+        if e["from"] == "self":
+            target = e.get("reply_to") if e.get("reply_to") in members else last
+            if target is None:
+                continue
+            out.append(dict(base, sender=members[target], sender_handle=target, text=text, is_user=True))
+        elif (text and pat.search(text)) or e.get("reply_to") == "self":
+            last = e["from"]
+            out.append(dict(base, sender=members[e["from"]], sender_handle=e["from"],
+                            text=(pat.sub("", text).strip() or text) if text else None))
+    return out
+
+
+def play(name):
+    sc = client.get(f"/demo/rooms/{name}").json()
+    batch = to_notifications(sc)
+    assert batch, name
+    return sc, client.post("/ingest/notification", json=batch).json()
+
+
+def test_rooms_listed():
+    names = {r["name"] for r in client.get("/demo/rooms").json()}
+    assert names == {"pile_on", "banter", "singled_out", "sextortion"}
+
+
+def test_room_scenario_has_bystanders_and_clock():
+    sc = client.get("/demo/rooms/pile_on").json()
+    ts = [e["timestamp"] for e in sc["events"]]
+    assert ts == sorted(ts)
+    assert len(to_notifications(sc)) < len(sc["events"]), "bystander chatter must be filtered out"
+
+
+def test_room_pile_on_reaches_group_bullying():
+    _, r = play("pile_on")
+    room = next(p for p in r["people"] if p["is_room"])
+    assert room["level"] in ("high", "critical") and room["label"] == "group_bullying", room
+
+
+def test_room_banter_stays_quiet():
+    _, r = play("banter")
+    assert all(p["level"] in ("info", "warn") for p in r["people"]), [(p["display_name"], p["level"]) for p in r["people"]]
+    assert r["new_alerts"] == []
+
+
+def test_room_singled_out_after_no():
+    _, r = play("singled_out")
+    member = next(p for p in r["people"] if not p["is_room"])
+    assert member["level"] in ("high", "critical"), member
+    assert member["label"] in ("stalking", "harassment_after_no"), member
+    phases = [ph["phase"] for ph in client.get(f"/people/{member['id']}").json()["consent_timeline"]]
+    assert "rejected" in phases and "violation" in phases, phases
+
+
+def test_room_sextortion_critical():
+    _, r = play("sextortion")
+    member = next(p for p in r["people"] if not p["is_room"])
+    assert member["level"] == "critical", member
+
+
+def test_chatroom_page_served():
+    r = client.get("/chatroom/")
+    assert r.status_code == 200 and 'id="room"' in r.text
