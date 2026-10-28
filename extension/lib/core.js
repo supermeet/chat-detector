@@ -53,6 +53,14 @@
     return !!flagged && (atLeastHigh(memberLevel) || atLeastHigh(roomLevel));
   }
 
+  /* An alert is raised when a person first reaches high/critical; later messages can sharpen the behaviour type
+     (e.g. a short chat that turns into a money demand). Cards follow the person's current view while it stays
+     high/critical. */
+  function currentAlert(alert, person) {
+    if (!person || !atLeastHigh(person.level)) return alert;
+    return Object.assign({}, alert, { level: person.level, label: person.label, reasons: person.reasons || alert.reasons });
+  }
+
   const HIGH_STEPS = ["Don't reply or argue: it usually makes them escalate.",
     'Mute them or leave the room for now.',
     'Save evidence: generate the evidence pack below (each message gets a SHA-256 fingerprint).',
@@ -99,7 +107,7 @@
     return 'SafeSphere backend error' + (err && err.status ? ' ' + err.status : '') + ': ' + ((err && err.message) || err);
   }
 
-  const api = { LEVELS, mentions, isTargeting, toNotification, levelsFor, shouldBlur, guidance, describeError };
+  const api = { LEVELS, mentions, isTargeting, toNotification, levelsFor, shouldBlur, currentAlert, guidance, describeError };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SSGCore = api;
 })(typeof self !== 'undefined' ? self : this);

@@ -115,7 +115,7 @@
   },
   "banter": {
     "title": "Friends roasting each other: should stay quiet",
-    "room": "Class 12-B",
+    "room": "Cricket Gang",
     "self": {
       "id": "priya",
       "name": "Priya"
@@ -219,7 +219,7 @@
   },
   "singled_out": {
     "title": "Singled out: one classmate won't stop after you say no",
-    "room": "Class 12-B",
+    "room": "Physics Lab B2",
     "self": {
       "id": "priya",
       "name": "Priya"
@@ -357,7 +357,7 @@
   },
   "sextortion": {
     "title": "Stranger in the room: flirting, a photo, then a money demand",
-    "room": "Class 12-B",
+    "room": "College Fest 2026",
     "self": {
       "id": "priya",
       "name": "Priya"

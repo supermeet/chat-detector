@@ -114,3 +114,12 @@ test('describeError: network vs http', () => {
   assert.match(C.describeError(new TypeError('Failed to fetch')), /not reachable/);
   assert.match(C.describeError({ status: 503, message: 'model missing' }), /503/);
 });
+
+test('currentAlert: card follows the person as the pattern becomes clearer', () => {
+  const alert = { id: 1, person_id: 'p1', level: 'critical', label: 'unreciprocated', reasons: ['old'] };
+  const now = { id: 'p1', level: 'critical', label: 'sextortion', reasons: ['new'] };
+  assert.deepEqual(C.currentAlert(alert, now), { id: 1, person_id: 'p1', level: 'critical', label: 'sextortion', reasons: ['new'] });
+  assert.deepEqual(C.currentAlert(alert, undefined), alert);
+  // a person marked safe (info) keeps the alert's own level so the card is not silently downgraded
+  assert.equal(C.currentAlert(alert, { id: 'p1', level: 'info', label: 'stalking', reasons: [] }).level, 'critical');
+});
