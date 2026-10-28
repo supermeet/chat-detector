@@ -7,14 +7,15 @@ A victim-side safety app that detects **stalking, harassment, bullying and sexto
 alone. It checks media with deepfake models and turns flagged chats into a **tamper-evident evidence pack**
 mapped to Indian law.
 
-## Run the demo (one command)
-Requires Python **3.11–3.13** and a network where `pip` works.
+## Run the demo
+Requires Python **3.11–3.13** (3.14 is too new for the model libraries).
 ```
 cd backend
-python -m venv .venv && .venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --port 8000
+python -m venv .venv
+.venv\Scripts\python -m pip install --use-feature=truststore -r requirements.txt
 ```
+Then double-click **`run.bat`** (or run `.venv\Scripts\python -m uvicorn app.main:app --port 8000` in `backend`).
+`--use-feature=truststore` makes pip use the Windows certificate store, which is needed on networks that inspect HTTPS.
 Open **http://localhost:8000**. The UI and API are served together. The header chip shows
 **● Live model** when the backend is connected, or **Demo mode** (sample data) when it isn't.
 
