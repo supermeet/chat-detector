@@ -13,9 +13,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import conclusion, deepfake, importers, linking, media, report
+from . import conclusion, deepfake, importers, lexicon, linking, media, report
 from .config import BACKEND_DIR, settings
-from .schemas import Feedback, LinkRequest, MediaPatch, Notification, PersonPatch, UnlinkRequest
+from .schemas import (Feedback, LexEdits, LexPending, LexSuggest, LexTerm, LexText, LinkRequest, MediaPatch,
+                      Notification, PersonPatch, UnlinkRequest)
 from .scoring import (FLAG_MSG_LABELS, LEVELS, ModelNotReady, label_replies, label_texts, model_status, person_view,
                       score_person)
 from .store import MediaCheck, Message, store, utcnow
@@ -303,8 +304,82 @@ def feedback(body: Feedback):
         for a in store.alerts.values():
             if a.person_id == p.id:
                 a.dismissed = True
+    elif body.note and body.note.strip():   # "missed this": the words go to the slang review queue
+        lexicon.lex.add_pending(body.note.strip()[:60], src="User", note="From a message you flagged as missed.")
     score_person(p.id)
     return person_view(p, detail=True)
+
+
+# ---------------------------------------------------------------- adaptive slang list (deliverable 3)
+def _rescore_all():
+    """A new or approved term applies at once: no retraining, just re-label and re-score everyone."""
+    with store.lock:
+        for pid in list(store.persons):
+            if pid in store.persons:
+                score_person(pid)
+
+
+def _lex_view():
+    return dict(version=lexicon.lex.version, terms=lexicon.lex.terms(), pending=lexicon.lex.pending,
+                log=lexicon.lex.log[:20])
+
+
+@app.get("/lexicon", dependencies=[Depends(require_key)])
+def lexicon_get():
+    return _lex_view()
+
+
+@app.post("/lexicon/terms", dependencies=[Depends(require_key)])
+def lexicon_add(body: LexTerm):
+    variants = body.variants or lexicon.suggest_rules(body.term)   # obfuscated spellings covered by default
+    t = lexicon.lex.add_term(body.term, body.cat, body.sev, variants)
+    _rescore_all()
+    return t
+
+
+@app.post("/lexicon/pending", dependencies=[Depends(require_key)])
+def lexicon_pending(body: LexPending):
+    return lexicon.lex.add_pending(body.term, body.cat, body.sev, body.src, body.note)
+
+
+@app.post("/lexicon/pending/{qid}/approve", dependencies=[Depends(require_key)])
+def lexicon_approve(qid: str, body: Optional[LexEdits] = None):
+    edits = body.model_dump(exclude_none=True) if body else {}
+    if not edits.get("variants"):
+        term = edits.get("term") or next((p["term"] for p in lexicon.lex.pending if p["id"] == qid), "")
+        edits["variants"] = lexicon.suggest_rules(term) if term else []
+    t = lexicon.lex.resolve_pending(qid, True, edits)
+    if t is None:
+        raise HTTPException(404, "suggestion not found")
+    _rescore_all()
+    return t
+
+
+@app.post("/lexicon/pending/{qid}/reject", dependencies=[Depends(require_key)])
+def lexicon_reject(qid: str):
+    if lexicon.lex.resolve_pending(qid, False) is None:
+        raise HTTPException(404, "suggestion not found")
+    return dict(rejected=qid)
+
+
+@app.post("/lexicon/test", dependencies=[Depends(require_key)])
+def lexicon_test(body: LexText):
+    norm, tokens, matches = lexicon.lex.analyse(body.text)
+    return dict(normalised=norm, tokens=tokens, matches=matches, label=label_texts([body.text])[0])
+
+
+@app.post("/lexicon/suggest", dependencies=[Depends(require_key)])
+def lexicon_suggest(body: LexSuggest):
+    """Variant spellings for ONE term. Gemini (if configured) sees only the term, never chat text."""
+    rules = lexicon.suggest_rules(body.term)
+    if settings.GEMINI_API_KEY:
+        try:
+            ai = conclusion.suggest_variants(body.term)
+            merged = list(dict.fromkeys([v for v in ai + rules if v.lower() != body.term.lower()]))[:10]
+            return dict(term=body.term, variants=merged, source="gemini+rules")
+        except Exception:  # network, quota, bad JSON: rules still answer
+            pass
+    return dict(term=body.term, variants=rules, source="rules")
 
 
 # ---------------------------------------------------------------- media check (deepfake connector)

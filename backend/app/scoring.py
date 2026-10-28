@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 
 from .config import settings
+from .lexicon import lex
 from .store import Alert, store, utcnow
 
 LEVELS = ["info", "warn", "high", "critical"]
@@ -29,7 +30,31 @@ def scorer():
                                 f"text_models.pkl from the Colab run into {settings.MODEL_DIR}.")
         from predict import Scorer  # noqa: E402  (ml/behavior)
         _scorer = Scorer(str(settings.MODEL_DIR))
+        if _scorer.tm is not None:
+            _scorer.tm = LexiconTextModels(_scorer.tm)
     return _scorer
+
+
+class LexiconTextModels:
+    """The trained text models plus the adaptive slang list: final label = max(model, word list) by harm.
+    Drop-in for ml/behavior TextModels (label_messages, label_replies, relabel), so the behaviour model,
+    reports and consent timeline all see the same labels."""
+
+    def __init__(self, tm):
+        self.tm = tm
+
+    def label_messages(self, texts):
+        return [lex.upgrade(t, lab) for t, lab in zip(texts, self.tm.label_messages(texts))]
+
+    def label_replies(self, texts):
+        return [lex.reply_override(t, lab) for t, lab in zip(texts, self.tm.label_replies(texts))]
+
+    def relabel(self, df):
+        df = df.copy()
+        u = df["is_user"] & df["text"].notna() & (df["text"].astype(str).str.len() > 0)
+        if u.any():
+            df.loc[u, "reply_label"] = self.label_replies(df.loc[u, "text"].astype(str).tolist())
+        return df
 
 
 def model_status():
