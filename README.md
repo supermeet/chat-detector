@@ -27,6 +27,8 @@ in Google Colab (CPU, about 10 minutes) with `data/safesphere_behavior_dataset.z
 |---|---|
 | `frontend/` | The UI. Edit `src/`, then `python frontend/build.py` → `index.html` (single file). `src/logic.js` holds the backend wiring. |
 | `backend/` | FastAPI: scoring, people and account linking, chat import, media check, evidence pack (JSON/PDF), metrics. See `backend/README.md`. |
+| `extension/` | SafeSphere Guard: Chrome extension for live chatrooms. See `extension/README.md`. |
+| `chatroom/` | Simulated group chat (served at `/chatroom/`) the extension is demonstrated on |
 | `backend/models/` | Trained behaviour model + text models + `metrics.json` |
 | `ml/behavior/` | Training pipeline: simulator, features, LightGBM training, evaluation, Colab notebook |
 | `data/` | Team synthetic dataset (4,800 train / 1,200 test conversations) |
@@ -39,6 +41,12 @@ in Google Colab (CPU, about 10 minutes) with `data/safesphere_behavior_dataset.z
 | Second, independent generator | 0.61 | **0.933** | 40% → 26.4% |
 
 Details and limitations: `docs/MODEL_ANALYSIS_AND_PRIVACY.md`.
+
+## Live chatrooms: SafeSphere Guard extension
+Most bullying happens in live group chats, so `extension/` is a Chrome extension that reads a chat page as you use
+it, scores the messages aimed at you with the same engine (per member **and** per room, so pile-ons are caught), and
+alerts, blurs and guides you. Demo on the simulated chatroom at **http://localhost:8000/chatroom/**. Setup, scenarios
+and tests: `extension/README.md`.
 
 ## Connecting the deepfake models
 Set `DEEPFAKE_MODE`, `DEEPFAKE_URL` and `DEEPFAKE_API_KEY` in `backend/.env` (see `.env.example`). No code changes are

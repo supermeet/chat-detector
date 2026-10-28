@@ -46,6 +46,14 @@ Backend: FastAPI in `backend/`. Base URL in dev: `http://localhost:8000`. Intera
 ```
 - `app`: `wa` `ig` `tg` `sms` `snap` `fb` · `text: null` = hidden preview · `event: "block"` + `is_user: true` = the user blocked them
 - `media_type`: `image` | `video` | `audio` (send `text: "📷 Photo"` like the real notification)
+- `room` (optional, live chatrooms; used by the extension with `app: "web"`): the message is stored for the member
+  **and** for a room person (`is_room: true`, `display_name` = room, one account `web:<room>/<handle>` per member),
+  so a pile-on is scored as one group. The room person is scored only once ≥ 2 members have messaged the user.
+  `message_ids` and `labels` stay one per submitted notification. Every person view has `is_room`.
+
+### Simulated chatroom (extension demo)
+`GET /demo/rooms` lists room scripts; `GET /demo/rooms/{name}` returns `{title, room, self, members, events[]}` with
+scenario-clock `timestamp`s. `GET /chatroom/` serves the page that plays them. See `extension/README.md`.
 
 Response:
 ```json
