@@ -1,0 +1,805 @@
+
+
+
+<div class="ss {{ themeClass }}" style="min-height: 100vh; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', sans-serif; font-size: 14px; line-height: 1.45">
+
+
+<sc-if value="{{ exitMode }}" hint-placeholder-val="{{ false }}">
+<div style="min-height: 100vh; background: #eef4fb; color: #18324d; padding: 32px 16px; font-family: system-ui, sans-serif">
+<div style="max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h1 style="margin: 0; font-size: 22px">Weather</h1>
+<button class="btn btn-ghost btn-sm" style="color: #18324d" onClick="{{ leaveExit }}" aria-label="Done">Done</button>
+</div>
+<div style="background: #ffffff; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 6px">
+<div style="font-size: 13px; color: #4a6380">Today · Partly cloudy</div>
+<div style="font-size: 64px; font-weight: 700; line-height: 1">29°</div>
+<div style="font-size: 14px; color: #4a6380">High 31° · Low 24° · Humidity 72%</div>
+</div>
+<div style="background: #ffffff; border-radius: 16px; padding: 8px 24px">
+<sc-for list="{{ forecast }}" as="f" hint-placeholder-count="5">
+<div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e3ebf4"><span>{{ f.d }}</span><span style="color: #4a6380">{{ f.s }}</span><span style="font-weight: 600">{{ f.t }}</span></div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ appMode }}" hint-placeholder-val="{{ true }}">
+
+<header style="position: sticky; top: 0; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<div style="display: flex; align-items: center; gap: 10px; margin-right: 8px">
+<div style="width: 34px; height: 34px; border-radius: 10px; background: var(--brand); color: #fff; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+<span style="font-size: 17px; font-weight: 800; letter-spacing: -.01em">SafeSphere</span>
+</div>
+<button class="btn btn-sm" onClick="{{ protection.toggle }}" aria-label="{{ protection.aria }}" style="border-radius: 999px">
+<span style="{{ protection.dot }}"></span><span>{{ protection.label }}</span>
+</button>
+<span class="chip hide-sm" style="background: var(--surface2); color: var(--muted)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>{{ t.ondevice }}</span>
+<button class="chip" style="{{ conn.style }}" title="{{ conn.title }}" onClick="{{ conn.click }}">{{ conn.label }}</button>
+<div style="flex: 1"></div>
+<div style="position: relative">
+<button class="btn btn-ghost btn-sm" onClick="{{ toggleBell }}" aria-label="Latest alerts" aria-expanded="{{ bell.open }}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"></path></svg>
+<sc-if value="{{ bell.hasCount }}" hint-placeholder-val="{{ false }}"><span class="nb nb-red">{{ bell.count }}</span></sc-if>
+</button>
+<sc-if value="{{ bell.open }}" hint-placeholder-val="{{ false }}">
+<div class="card pop" style="position: absolute; right: 0; top: 46px; width: 320px; max-width: 86vw; padding: 8px; z-index: 30">
+<div style="padding: 8px 10px; font-weight: 700">Latest alerts</div>
+<sc-if value="{{ bell.empty }}" hint-placeholder-val="{{ false }}"><div class="meta" style="padding: 8px 10px 12px">No alerts yet.</div></sc-if>
+<sc-for list="{{ bell.items }}" as="b" hint-placeholder-count="3">
+<button class="nav-btn" style="min-height: 52px; align-items: flex-start; padding: 8px 10px; flex-direction: column; gap: 2px" onClick="{{ b.open }}">
+<span style="display: flex; gap: 8px; align-items: center"><span class="chip {{ b.sevClass }}"><span class="dot"></span>{{ b.sevLabel }}</span><span style="font-weight: 700">{{ b.from }}</span></span>
+<span class="meta" style="font-weight: 400">{{ b.cat }} · {{ b.time }}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+<button class="btn btn-sm btn-ghost" onClick="{{ toggleLang }}" aria-label="Switch language">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>{{ langLabel }}
+</button>
+<button class="btn btn-sm btn-ghost" onClick="{{ toggleTheme }}" aria-label="Switch light or dark theme">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg><span class="hide-sm">{{ themeLabel }}</span>
+</button>
+<button class="btn btn-sm" onClick="{{ quickExit }}" aria-label="Quick exit to a neutral screen" style="border-color: var(--ink)">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"></path></svg>{{ t.exit }}
+</button>
+</header>
+
+<div class="layout" style="max-width: 1440px; margin: 0 auto; padding: 16px; gap: 16px">
+
+<nav class="side" aria-label="Main">
+<div class="navlist">
+<button class="nav-btn {{ nav.home.cls }}" onClick="{{ nav.home.go }}" aria-current="{{ nav.home.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg><span style="flex: 1">{{ t.home }}</span></button>
+<button class="nav-btn {{ nav.feed.cls }}" onClick="{{ nav.feed.go }}" aria-current="{{ nav.feed.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="2"></circle><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"></path></svg><span style="flex: 1">{{ t.feed }}</span><sc-if value="{{ nav.feed.hasBadge }}" hint-placeholder-val="{{ false }}"><span class="nb nb-red" aria-label="unread alerts">{{ nav.feed.badge }}</span></sc-if></button>
+<button class="nav-btn {{ nav.people.cls }}" onClick="{{ nav.people.go }}" aria-current="{{ nav.people.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"></path></svg><span style="flex: 1">{{ t.people }}</span><sc-if value="{{ nav.people.hasBadge }}" hint-placeholder-val="{{ false }}"><span class="nb nb-grey">{{ nav.people.badge }}</span></sc-if></button>
+<button class="nav-btn {{ nav.media.cls }}" onClick="{{ nav.media.go }}" aria-current="{{ nav.media.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="m21 16-5-5-9 9"></path></svg><span style="flex: 1">{{ t.media }}</span></button>
+<button class="nav-btn {{ nav.import.cls }}" onClick="{{ nav.import.go }}" aria-current="{{ nav.import.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg><span style="flex: 1">{{ t.import }}</span></button>
+<button class="nav-btn {{ nav.evidence.cls }}" onClick="{{ nav.evidence.go }}" aria-current="{{ nav.evidence.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M9 15l2 2 4-4"></path></svg><span style="flex: 1">{{ t.evidence }}</span><sc-if value="{{ nav.evidence.hasBadge }}" hint-placeholder-val="{{ false }}"><span class="nb nb-grey">{{ nav.evidence.badge }}</span></sc-if></button>
+<button class="nav-btn {{ nav.metrics.cls }}" onClick="{{ nav.metrics.go }}" aria-current="{{ nav.metrics.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg><span style="flex: 1">{{ t.metrics }}</span></button>
+<button class="nav-btn {{ nav.slang.cls }}" onClick="{{ nav.slang.go }}" aria-current="{{ nav.slang.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7V5h16v2M12 5v14M9 19h6"></path></svg><span style="flex: 1">{{ t.slang }}</span><sc-if value="{{ nav.slang.hasBadge }}" hint-placeholder-val="{{ false }}"><span class="nb nb-grey">{{ nav.slang.badge }}</span></sc-if></button>
+<button class="nav-btn {{ nav.settings.cls }}" onClick="{{ nav.settings.go }}" aria-current="{{ nav.settings.current }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"></path></svg><span style="flex: 1">{{ t.settings }}</span></button>
+</div>
+<button class="btn btn-help" style="width: 100%; margin-top: 16px; min-height: 48px" onClick="{{ openHelp }}" aria-label="Get help now">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4"></circle><path d="m5.6 5.6 3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"></path></svg>{{ t.help }}
+</button>
+<p class="meta hide-sm" style="margin: 14px 4px 0">Only flagged items are ever uploaded. Everything else stays on this device.</p>
+</nav>
+
+<main class="mainc">
+
+
+<sc-if value="{{ is.home }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h1 style="margin: 4px 0 0; font-size: 22px">{{ t.home }}</h1>
+<div class="card {{ home.statusBorder }}" style="padding: 20px 22px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
+<div style="flex: 1; min-width: 240px">
+<div style="font-size: 20px; font-weight: 800">{{ home.headline }}</div>
+<div class="muted" style="margin-top: 4px">{{ home.sub }}</div>
+</div>
+<span class="chip {{ home.worstClass }}"><span class="dot"></span>Worst level: {{ home.worstLabel }}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px">
+<sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+<div class="card" style="padding: 16px"><div class="meta">{{ k.label }}</div><div style="font-size: 28px; font-weight: 800; margin-top: 4px">{{ k.value }}</div></div>
+</sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section class="card" style="flex: 1 1 360px; padding: 18px; min-width: 0">
+<h2 style="margin: 0 0 12px; font-size: 16px">Needs attention</h2>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{ home.attention }}" as="p" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 12px">
+<div style="width: 38px; height: 38px; border-radius: 50%; background: var(--surface2); display: grid; place-items: center; font-weight: 800">{{ p.initials }}</div>
+<div style="flex: 1; min-width: 0"><div style="font-weight: 700">{{ p.name }}</div><div class="meta">{{ p.tagline }}</div></div>
+<span class="chip {{ p.sevClass }}"><span class="dot"></span>{{ p.sevLabel }}</span>
+<button class="btn btn-sm" onClick="{{ p.view }}">View</button>
+</div>
+</sc-for>
+</div>
+</section>
+<section class="card" style="flex: 1 1 360px; padding: 18px; min-width: 0">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px"><h2 style="margin: 0; font-size: 16px">Recent alerts</h2><button class="btn btn-sm btn-ghost" onClick="{{ nav.feed.go }}">See all</button></div>
+<sc-if value="{{ home.noAlerts }}" hint-placeholder-val="{{ false }}">
+<div style="text-align: center; padding: 24px 8px">
+<div class="muted" style="margin-bottom: 12px">No alerts yet. The demo feed is paused.</div>
+<button class="btn btn-primary" onClick="{{ startFromHome }}">Start the demo feed</button>
+</div>
+</sc-if>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{ home.recent }}" as="a" hint-placeholder-count="3">
+<div style="display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line)">
+<span class="badge b-{{ a.app }}">{{ a.app }}</span>
+<div style="flex: 1; min-width: 0"><div style="font-weight: 700">{{ a.from }}</div><div class="meta">{{ a.cat }} · {{ a.time }}</div></div>
+<span class="chip {{ a.sevClass }}"><span class="dot"></span>{{ a.sevLabel }}</span>
+</div>
+</sc-for>
+</div>
+</section>
+</div>
+<section class="card" style="padding: 18px">
+<h2 style="margin: 0 0 12px; font-size: 16px">Quick actions</h2>
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<button class="btn" onClick="{{ nav.media.go }}">Check a photo or video</button>
+<button class="btn" onClick="{{ nav.import.go }}">Import a chat</button>
+<button class="btn btn-help" onClick="{{ openHelp }}">Get help now</button>
+</div>
+</section>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ is.feed }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<h1 style="margin: 4px 0 0; font-size: 22px; flex: 1">{{ t.feed }}</h1>
+<label class="sr-only" for="scen">Load scenario</label>
+<select id="scen" class="field" style="width: auto; min-height: 40px" value="{{ feed.scenario }}" onChange="{{ feed.setScenario }}">
+<option value="refusal">Scenario: You said no (please stop · mat karo · bhaiya)</option>
+<option value="full">Scenario: Full demo</option>
+<option value="stalker">Scenario: Silent stalker</option>
+<option value="sextortion">Scenario: Sextortion</option>
+<option value="bullying">Scenario: Class bullying</option>
+<option value="flirt">Scenario: Mutual flirt</option>
+</select>
+<div class="seg" role="group" aria-label="Playback speed">
+<button class="{{ feed.sp1 }}" onClick="{{ feed.speed1 }}" aria-pressed="{{ feed.sp1on }}">1×</button>
+<button class="{{ feed.sp2 }}" onClick="{{ feed.speed2 }}" aria-pressed="{{ feed.sp2on }}">2×</button>
+</div>
+<button class="btn btn-primary" onClick="{{ feed.toggleRun }}">{{ feed.runLabel }}</button>
+<button class="btn" onClick="{{ feed.reset }}">Reset</button>
+</div>
+<sc-if value="{{ feed.paused }}" hint-placeholder-val="{{ false }}">
+<div class="card" style="padding: 12px 16px; background: var(--warn-bg); color: var(--warn-ink); border-color: transparent">Protection is paused. New messages are not being scanned. <button class="btn btn-sm" style="margin-left: 8px" onClick="{{ protection.toggle }}">Resume protection</button></div>
+</sc-if>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px">
+<sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+<div class="card" style="padding: 14px 16px"><div class="meta">{{ k.label }}</div><div style="font-size: 26px; font-weight: 800">{{ k.value }}</div></div>
+</sc-for>
+</div>
+<sc-if value="{{ feed.hasConsent }}" hint-placeholder-val="{{ false }}">
+<div class="card pop" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><span style="font-weight: 800; flex: 1">Consent with {{ feed.consent.name }}</span><span class="meta" style="font-weight: 700">{{ feed.consent.counts }}</span><span class="chip {{ feed.consent.sevClass }}"><span class="dot"></span>Now: {{ feed.consent.phase }}</span></div>
+<div class="meta">{{ feed.consent.summary }}</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{ feed.consent.refusals }}" as="rf" hint-placeholder-count="2"><span class="chip" style="background: var(--brandSoft); color: var(--brandInk)">{{ rf.time }} · you: "{{ rf.text }}"</span></sc-for></div>
+</div>
+</sc-if>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+<div class="seg" role="group" aria-label="Filter">
+<button class="{{ feed.fAll }}" onClick="{{ feed.showAll }}">All</button>
+<button class="{{ feed.fFlag }}" onClick="{{ feed.showFlagged }}">Flagged only</button>
+</div>
+<label class="sr-only" for="fapp">Filter by app</label>
+<select id="fapp" class="field" style="width: auto" value="{{ feed.app }}" onChange="{{ feed.setApp }}"><option value="">All apps</option><option value="WA">WhatsApp</option><option value="IG">Instagram</option><option value="TG">Telegram</option><option value="SNAP">Snapchat</option><option value="SMS">SMS</option></select>
+<label class="sr-only" for="flev">Filter by level</label>
+<select id="flev" class="field" style="width: auto" value="{{ feed.level }}" onChange="{{ feed.setLevel }}"><option value="">All levels</option><option value="info">Info</option><option value="warn">Warn</option><option value="high">High</option><option value="critical">Critical</option></select>
+<label class="sr-only" for="fq">Search sender or text</label>
+<input id="fq" class="field" style="flex: 1 1 200px; width: auto" placeholder="Search sender or text" value="{{ feed.q }}" onChange="{{ feed.setQ }}">
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section style="flex: 3 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 10px" aria-label="Notification stream">
+<sc-if value="{{ feed.empty }}" hint-placeholder-val="{{ false }}">
+<div class="card" style="padding: 40px 20px; text-align: center">
+<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color: var(--muted)" aria-hidden="true"><circle cx="12" cy="12" r="2"></circle><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"></path></svg>
+<p style="margin: 10px 0 14px">{{ feed.emptyText }}</p>
+<button class="btn btn-primary" onClick="{{ feed.toggleRun }}">{{ feed.runLabel }}</button>
+</div>
+</sc-if>
+<sc-for list="{{ feed.items }}" as="m" hint-placeholder-count="4">
+<sc-if value="{{ m.mine }}" hint-placeholder-val="{{ false }}">
+<article class="card pop" style="padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; margin-left: auto; width: min(100%, 520px); background: var(--brandSoft); border-color: transparent" aria-label="Your reply">
+<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><span style="font-weight: 800; color: var(--brandInk)">You replied</span><span class="meta">{{ m.time }} · {{ m.appName }}</span><div style="flex: 1"></div><sc-if value="{{ m.isRefusal }}" hint-placeholder-val="{{ true }}"><span class="chip" style="background: var(--surface); color: var(--brandInk)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>Refusal detected</span></sc-if></div>
+<div style="font-size: 16px; font-weight: 600">"{{ m.text }}"</div>
+<sc-if value="{{ m.isRefusal }}" hint-placeholder-val="{{ true }}">
+<div style="font-size: 13px"><b>We read this as a clear no.</b> {{ m.rejectNote }}</div>
+<div class="meta">Every message they send after this counts against them. Your reply stays on this device.</div>
+</sc-if>
+<sc-if value="{{ m.notRefusal }}" hint-placeholder-val="{{ false }}"><div class="meta">{{ m.rejectNote }}</div></sc-if>
+</article>
+</sc-if>
+<sc-if value="{{ m.incoming }}" hint-placeholder-val="{{ true }}">
+<article class="card pop {{ m.border }}" style="padding: 14px 16px; display: flex; gap: 12px">
+<span class="badge b-{{ m.app }}" aria-label="{{ m.appName }}">{{ m.app }}</span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><span style="font-weight: 700">{{ m.from }}</span><span class="meta">{{ m.time }}</span><div style="flex: 1"></div>
+<sc-if value="{{ m.flagged }}" hint-placeholder-val="{{ false }}"><span class="chip {{ m.sevClass }}"><span class="dot"></span>{{ m.sevLabel }}</span></sc-if>
+<sc-if value="{{ m.hasCat }}" hint-placeholder-val="{{ false }}"><span class="tag">{{ m.cat }}</span></sc-if>
+</div>
+<sc-if value="{{ m.hidden }}" hint-placeholder-val="{{ false }}"><div class="muted" style="font-style: italic">New message, preview hidden: scored on metadata only <span class="tag" style="margin-left: 6px">Low confidence</span></div></sc-if>
+<sc-if value="{{ m.shown }}" hint-placeholder-val="{{ true }}"><div>{{ m.text }}</div></sc-if>
+<sc-if value="{{ m.media }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; background: var(--surface2)">
+<div style="width: 54px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #93A4B7, #FDDBB8); filter: blur(4px)" aria-hidden="true"></div>
+<span style="flex: 1">Photo · blurred</span>
+<button class="btn btn-sm" onClick="{{ m.checkMedia }}">Check this media</button>
+</div>
+</sc-if>
+<sc-if value="{{ m.hasAfterNo }}" hint-placeholder-val="{{ false }}"><div><span class="chip sev-critical"><span class="dot"></span>{{ m.afterNoLabel }}</span></div></sc-if>
+<sc-if value="{{ m.hasWhy }}" hint-placeholder-val="{{ false }}"><div class="meta"><b>Why:</b> {{ m.why }}</div></sc-if>
+<div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center">
+<sc-if value="{{ m.clean }}" hint-placeholder-val="{{ false }}"><span class="meta" style="display: inline-flex; gap: 4px; align-items: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2f9e6e" stroke-width="2.4" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>Clean, stays on device</span><button class="btn btn-sm btn-ghost" onClick="{{ m.missed }}">Missed this? Flag it</button></sc-if>
+<sc-if value="{{ m.canNotHarass }}" hint-placeholder-val="{{ false }}"><button class="btn btn-sm btn-ghost" onClick="{{ m.notHarass }}">Not harassment</button></sc-if>
+<sc-if value="{{ m.markedSafe }}" hint-placeholder-val="{{ false }}"><span class="meta">Marked as not harassment. Feedback logged.</span></sc-if>
+</div>
+</div>
+</article>
+</sc-if>
+</sc-for>
+</section>
+<aside style="flex: 2 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 10px" aria-label="Alerts">
+<h2 style="margin: 0; font-size: 16px">Alerts</h2>
+<sc-if value="{{ feed.noAlerts }}" hint-placeholder-val="{{ false }}"><div class="card meta" style="padding: 18px">High and Critical alerts show here, with the reasons.</div></sc-if>
+<sc-for list="{{ feed.alerts }}" as="a" hint-placeholder-count="2">
+<div class="card pop {{ a.border }}" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><span class="chip {{ a.sevClass }}"><span class="dot"></span>{{ a.sevLabel }}</span><span class="tag">{{ a.cat }}</span><span class="meta" style="margin-left: auto">{{ a.time }}</span></div>
+<div style="font-weight: 700">{{ a.from }}</div>
+<div class="meta" style="color: var(--ink)">{{ a.why }}</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<sc-if value="{{ a.isCrit }}" hint-placeholder-val="{{ false }}"><button class="btn btn-sm btn-danger" onClick="{{ a.evidence }}">Evidence &amp; report</button></sc-if>
+<button class="btn btn-sm" onClick="{{ a.view }}">View person</button>
+<button class="btn btn-sm btn-ghost" onClick="{{ a.notHarass }}">Not harassment</button>
+<button class="btn btn-sm btn-ghost" onClick="{{ a.dismiss }}" aria-label="Dismiss alert">Dismiss</button>
+</div>
+</div>
+</sc-for>
+</aside>
+</div>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ is.people }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><h1 style="margin: 4px 0 0; font-size: 22px; flex: 1">{{ t.people }}</h1><button class="btn" onClick="{{ people.openMerge }}">+ Merge people manually</button></div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section style="flex: 2 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+<div class="seg" role="group" aria-label="Filter people" style="align-self: flex-start; flex-wrap: wrap">
+<sc-for list="{{ people.filters }}" as="f" hint-placeholder-count="4"><button class="{{ f.cls }}" onClick="{{ f.pick }}">{{ f.label }}</button></sc-for>
+</div>
+<label class="sr-only" for="pq">Search people</label>
+<input id="pq" class="field" placeholder="Search people or handles" value="{{ people.q }}" onChange="{{ people.setQ }}">
+<sc-for list="{{ people.list }}" as="p" hint-placeholder-count="4">
+<button class="card {{ p.rowCls }}" style="padding: 12px 14px; display: flex; gap: 12px; align-items: center; text-align: left; font: inherit; color: inherit; cursor: pointer; width: 100%" onClick="{{ p.select }}" aria-pressed="{{ p.selected }}">
+<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--surface2); display: grid; place-items: center; font-weight: 800; flex: none">{{ p.initials }}</div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px">
+<div style="display: flex; gap: 8px; align-items: center"><span style="font-weight: 700">{{ p.name }}</span><span class="meta">{{ p.nAcc }}</span></div>
+<div style="display: flex; gap: 4px; flex-wrap: wrap"><sc-for list="{{ p.tags }}" as="tg" hint-placeholder-count="2"><span class="tag">{{ tg }}</span></sc-for></div>
+<div class="riskbar"><div class="{{ p.fill }}" style="{{ p.riskW }}"></div></div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px"><span class="chip {{ p.sevClass }}"><span class="dot"></span>{{ p.sevLabel }}</span><span style="font-weight: 800">{{ p.risk }}</span></div>
+</button>
+</sc-for>
+<sc-if value="{{ people.noMatch }}" hint-placeholder-val="{{ false }}"><div class="card meta" style="padding: 16px">No people match this filter.</div></sc-if>
+</section>
+
+<section class="card" style="flex: 3 1 420px; min-width: 0; padding: 20px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap">
+<div style="width: 52px; height: 52px; border-radius: 50%; background: var(--brandSoft); color: var(--brandInk); display: grid; place-items: center; font-weight: 800; font-size: 18px">{{ pd.initials }}</div>
+<div style="flex: 1; min-width: 180px"><div style="font-size: 20px; font-weight: 800">{{ pd.name }}</div><div class="meta">{{ pd.rel }} · {{ pd.nAcc }}</div></div>
+<span class="chip {{ pd.sevClass }}"><span class="dot"></span>{{ pd.sevLabel }}</span>
+<div style="text-align: right"><div style="font-size: 26px; font-weight: 800; line-height: 1">{{ pd.risk }}<span class="meta" style="font-size: 13px">/100</span></div><div class="meta">Risk</div></div>
+</div>
+<sc-if value="{{ pd.safe }}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 14px; border-radius: 10px; background: var(--info-bg); color: var(--info-ink)">You marked this person as not harassment. Alerts are lowered. <button class="btn btn-sm" style="margin-left: 6px" onClick="{{ pd.undoSafe }}">Undo</button></div></sc-if>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<button class="btn btn-primary" onClick="{{ pd.evidence }}">Build evidence pack</button>
+<button class="btn" onClick="{{ pd.alertTrusted }}">Alert trusted contact</button>
+<button class="btn" onClick="{{ pd.notHarass }}">Not harassment</button>
+<label class="sr-only" for="mute">Mute alerts</label>
+<select id="mute" class="field" style="width: auto" value="{{ pd.mute }}" onChange="{{ pd.setMute }}"><option value="">Mute alerts…</option><option value="24 h">Mute for 24 h</option><option value="7 days">Mute for 7 days</option><option value="always">Mute always</option></select>
+<button class="btn btn-ghost" onClick="{{ pd.howBlock }}">How to block</button>
+</div>
+
+<div>
+<h3 style="margin: 0 0 10px; font-size: 14px">Linked accounts</h3>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{ pd.accounts }}" as="ac" hint-placeholder-count="2">
+<div style="display: flex; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; flex-wrap: wrap">
+<span class="badge b-{{ ac.app }}">{{ ac.app }}</span>
+<div style="flex: 1; min-width: 180px"><div style="font-weight: 700">{{ ac.handle }} <span class="tag" style="margin-left: 6px">{{ ac.label }}</span></div><div class="meta">{{ ac.reason }}</div></div>
+<sc-if value="{{ ac.pending }}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 6px"><button class="btn btn-sm" onClick="{{ ac.confirm }}">Confirm link</button><button class="btn btn-sm btn-ghost" onClick="{{ ac.split }}">Not the same person</button></div></sc-if>
+<sc-if value="{{ ac.confirmed }}" hint-placeholder-val="{{ false }}"><span class="meta" style="color: var(--info-ink); font-weight: 700">Confirmed by you</span></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div>
+<h3 style="margin: 0 0 10px; font-size: 14px">Consent timeline</h3>
+<div style="display: flex; height: 14px; border-radius: 99px; overflow: hidden; gap: 2px" role="img" aria-label="{{ pd.timelineAria }}">
+<sc-for list="{{ pd.timeline }}" as="seg" hint-placeholder-count="4"><div style="{{ seg.style }}" title="{{ seg.tip }}"></div></sc-for>
+</div>
+<div style="display: flex; gap: 2px; margin-top: 8px">
+<sc-for list="{{ pd.timeline }}" as="seg" hint-placeholder-count="4"><div style="{{ seg.labelStyle }}" title="{{ seg.tip }}"><div style="font-size: 12px; font-weight: 700">{{ seg.phase }}</div><div class="meta">{{ seg.date }}</div></div></sc-for>
+</div>
+<div class="meta" style="margin-top: 6px">Hover a segment to see what caused the change.</div>
+</div>
+
+<div>
+<h3 style="margin: 0 0 10px; font-size: 14px">Why we flagged this</h3>
+<ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{ pd.reasons }}" as="r" hint-placeholder-count="3"><li>{{ r.pre }}<b>{{ r.bold }}</b>{{ r.post }}</li></sc-for>
+</ul>
+</div>
+
+<div style="display: flex; gap: 16px; flex-wrap: wrap">
+<div style="flex: 1 1 240px">
+<h3 style="margin: 0 0 10px; font-size: 14px">Behaviour features</h3>
+<div style="border: 1px solid var(--line); border-radius: 12px; overflow: hidden">
+<sc-for list="{{ pd.features }}" as="ft" hint-placeholder-count="4"><div style="display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line)"><span class="muted">{{ ft.k }}</span><span style="font-weight: 700">{{ ft.v }}</span></div></sc-for>
+</div>
+</div>
+<div style="flex: 1 1 240px">
+<h3 style="margin: 0 0 10px; font-size: 14px">Messages per day (last 14 days)</h3>
+<div style="display: flex; align-items: flex-end; gap: 4px; height: 110px; padding: 8px; border: 1px solid var(--line); border-radius: 12px" role="img" aria-label="{{ pd.activityAria }}">
+<sc-for list="{{ pd.activity }}" as="bar" hint-placeholder-count="14"><div style="{{ bar.style }}" title="{{ bar.tip }}"></div></sc-for>
+</div>
+<div class="meta" style="margin-top: 6px">Darker bars: most messages sent after 11 pm.</div>
+</div>
+</div>
+
+<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end">
+<div style="flex: 1 1 220px">
+<label for="rel" style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 14px">Relationship</label>
+<select id="rel" class="field" value="{{ pd.rel }}" onChange="{{ pd.setRel }}"><option>Stranger</option><option>Acquaintance</option><option>Friend</option><option>Partner</option><option>Family</option><option>Classmate</option></select>
+</div>
+<div class="meta" style="flex: 2 1 260px">Used by the model. Partners and family get different thresholds than strangers.</div>
+</div>
+
+<div>
+<h3 style="margin: 0 0 10px; font-size: 14px">Message history</h3>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{ pd.history }}" as="h" hint-placeholder-count="3">
+<div class="{{ h.cls }}" style="{{ h.style }}"><span class="badge b-{{ h.app }}" style="width: 24px; height: 24px; font-size: 9px">{{ h.app }}</span><div style="flex: 1"><div>{{ h.text }}</div><div class="meta">{{ h.time }}</div></div></div>
+</sc-for>
+</div>
+</div>
+</section>
+</div>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ is.media }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><h1 style="margin: 4px 0 0; font-size: 22px; flex: 1">{{ t.media }}</h1>
+<label class="meta" for="srv">Demo server</label><select id="srv" class="field" style="width: auto" value="{{ media.server }}" onChange="{{ media.setServer }}"><option value="up">Online</option><option value="down">Unreachable</option></select></div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section class="card" style="flex: 1 1 360px; min-width: 0; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+<sc-if value="{{ media.noFile }}" hint-placeholder-val="{{ true }}">
+<label class="drop" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 220px; border: 2px dashed var(--line); border-radius: 14px; text-align: center; padding: 20px; cursor: pointer" onDragOver="{{ media.dragOver }}" onDrop="{{ media.drop }}">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand)" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
+<span style="font-weight: 700">Drop an image, video or voice note</span>
+<span class="meta">or click to choose a file · up to 50 MB</span>
+<input class="sr-only" type="file" accept="image/*,video/*,audio/*" onChange="{{ media.pick }}">
+</label>
+<button class="btn" onClick="{{ media.useSample }}">Use the sample from the demo chat</button>
+</sc-if>
+<sc-if value="{{ media.hasFile }}" hint-placeholder-val="{{ false }}">
+<div style="position: relative; border-radius: 14px; overflow: hidden; min-height: 220px; background: var(--surface2); display: grid; place-items: center">
+<sc-if value="{{ media.isImg }}" hint-placeholder-val="{{ false }}"><img src="{{ media.url }}" alt="Uploaded media" style="{{ media.imgStyle }}"></sc-if>
+<sc-if value="{{ media.isPlaceholder }}" hint-placeholder-val="{{ false }}"><div style="{{ media.phStyle }}" role="img" aria-label="Sample image placeholder"></div></sc-if>
+<sc-if value="{{ media.blurred }}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(20,16,30,.35); color: #fff; text-align: center; padding: 16px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle><path d="M3 3l18 18"></path></svg>
+<span style="font-weight: 700">Sensitive content</span>
+<button class="btn btn-sm" onClick="{{ media.askReveal }}">Tap to reveal</button>
+</div>
+</sc-if>
+</div>
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><div style="flex: 1; min-width: 160px"><div style="font-weight: 700">{{ media.name }}</div><div class="meta">{{ media.size }} · {{ media.kind }}</div></div>
+<sc-if value="{{ media.revealed }}" hint-placeholder-val="{{ false }}"><button class="btn btn-sm" onClick="{{ media.hide }}">Hide</button></sc-if>
+<button class="btn btn-sm btn-ghost" onClick="{{ media.resetAll }}">Analyse another</button></div>
+</sc-if>
+<sc-if value="{{ media.hasError }}" hint-placeholder-val="{{ false }}"><div role="alert" style="padding: 10px 14px; border-radius: 10px; background: var(--crit-bg); color: var(--crit-ink); display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="flex: 1">{{ media.error }}</span><sc-if value="{{ media.canRetry }}" hint-placeholder-val="{{ false }}"><button class="btn btn-sm" onClick="{{ media.analyse }}">Retry</button></sc-if></div></sc-if>
+<div>
+<label for="ctx" style="display: block; font-weight: 700; margin-bottom: 6px">Message sent with this media <span class="meta">(optional)</span></label>
+<textarea id="ctx" class="field" placeholder="Paste the message that came with it. It helps us spot threats and money demands." value="{{ media.context }}" onChange="{{ media.setContext }}"></textarea>
+</div>
+<button class="btn btn-primary" onClick="{{ media.analyse }}" disabled="{{ media.cantAnalyse }}">{{ media.analyseLabel }}</button>
+<div class="meta">Checks 1 and 2 run on this device. Only the file's fingerprint is sent for check 3.</div>
+</section>
+
+<section style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+<div class="card" style="padding: 18px">
+<h2 style="margin: 0 0 12px; font-size: 16px">Analysis</h2>
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{ media.steps }}" as="st" hint-placeholder-count="4">
+<li style="display: flex; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px">
+<span style="width: 26px; height: 26px; display: grid; place-items: center; flex: none">
+<sc-if value="{{ st.isWaiting }}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="3 3" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle></svg></sc-if>
+<sc-if value="{{ st.isRunning }}" hint-placeholder-val="{{ false }}"><svg class="spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.6"></path></svg></sc-if>
+<sc-if value="{{ st.isPass }}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f9e6e" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg></sc-if>
+<sc-if value="{{ st.isFlag }}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e2622b" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20z"></path><path d="M12 10v4M12 17h.01"></path></svg></sc-if>
+</span>
+<div style="flex: 1; min-width: 0"><div style="font-weight: 700">{{ st.n }}. {{ st.name }}</div><div class="meta">{{ st.result }}</div></div>
+<span class="meta" style="font-weight: 700">{{ st.statusLabel }}</span>
+</li>
+</sc-for>
+</ol>
+</div>
+<sc-if value="{{ media.hasVerdict }}" hint-placeholder-val="{{ false }}">
+<div class="card pop {{ media.vBorder }}" style="padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 10px; align-items: center"><span class="chip {{ media.vClass }}"><span class="dot"></span>{{ media.vLabel }}</span><span style="font-weight: 800; font-size: 16px">{{ media.verdict }}</span></div>
+<div style="font-weight: 700">What to do</div>
+<ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px"><sc-for list="{{ media.todo }}" as="td" hint-placeholder-count="3"><li>{{ td }}</li></sc-for></ul>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<button class="btn btn-primary" onClick="{{ media.toEvidence }}">Generate evidence pack</button>
+<a class="btn" href="https://stopncii.org" target="_blank" rel="noopener">Hash on StopNCII</a>
+<label class="sr-only" for="addp">Add to a person</label>
+<select id="addp" class="field" style="width: auto" value="{{ media.addTo }}" onChange="{{ media.setAddTo }}"><option value="">Add to a person…</option><sc-for list="{{ peopleOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select>
+</div>
+<div class="meta">StopNCII creates a fingerprint of the image on your device so platforms can block it. The image itself is never uploaded.</div>
+</div>
+</sc-if>
+</section>
+</div>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ is.import }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h1 style="margin: 4px 0 0; font-size: 22px">{{ t.import }}</h1>
+<p class="muted" style="margin: 0">Importing history gives SafeSphere both sides of the conversation, so it can tell banter from harassment.</p>
+<sc-if value="{{ imp.isPick }}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px">
+<sc-for list="{{ imp.sources }}" as="src" hint-placeholder-count="4">
+<div class="card" style="padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; gap: 10px; align-items: center"><span class="badge b-{{ src.badge }}">{{ src.badge }}</span><span style="font-weight: 800">{{ src.name }}</span></div>
+<div class="meta" style="flex: 1">{{ src.how }}</div>
+<label class="btn btn-primary drop" style="position: relative">{{ src.btn }}<input class="sr-only" type="file" accept="{{ src.accept }}" onChange="{{ src.pick }}"></label>
+<button class="btn btn-sm btn-ghost" onClick="{{ src.sample }}">Use a sample file</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ imp.hasError }}" hint-placeholder-val="{{ false }}">
+<div role="alert" class="card" style="padding: 14px 16px; background: var(--crit-bg); color: var(--crit-ink); border-color: transparent"><div style="font-weight: 700">{{ imp.error }}</div><div class="mono" style="margin-top: 6px; color: var(--ink)">{{ imp.errorSample }}</div></div>
+</sc-if>
+<sc-if value="{{ imp.isPreview }}" hint-placeholder-val="{{ false }}">
+<div class="card pop" style="padding: 20px; display: flex; flex-direction: column; gap: 16px; max-width: 720px">
+<div style="display: flex; gap: 10px; align-items: center"><span class="badge b-{{ imp.badge }}">{{ imp.badge }}</span><div><div style="font-weight: 800">{{ imp.fileName }}</div><div class="meta">{{ imp.summary }}</div></div></div>
+<sc-if value="{{ imp.isOcr }}" hint-placeholder-val="{{ false }}"><div class="tag" style="align-self: flex-start">OCR confidence: 93% · 2 lines unreadable, marked [?]</div></sc-if>
+<div>
+<label for="who" style="display: block; font-weight: 700; margin-bottom: 6px">1. Who are you in this chat?</label>
+<select id="who" class="field" value="{{ imp.who }}" onChange="{{ imp.setWho }}"><option value="">Choose…</option><sc-for list="{{ imp.participants }}" as="pt" hint-placeholder-count="2"><option value="{{ pt }}">{{ pt }}</option></sc-for></select>
+<div class="meta" style="margin-top: 4px">So we know which replies are yours, for example "please stop".</div>
+</div>
+<div>
+<label for="lnk" style="display: block; font-weight: 700; margin-bottom: 6px">2. Link to a person</label>
+<select id="lnk" class="field" value="{{ imp.link }}" onChange="{{ imp.setLink }}"><sc-for list="{{ peopleOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for><option value="new">+ New person</option></select>
+</div>
+<div style="display: flex; gap: 8px"><button class="btn btn-primary" onClick="{{ imp.run }}" disabled="{{ imp.cantRun }}">Import &amp; analyse</button><button class="btn btn-ghost" onClick="{{ imp.cancel }}">Cancel</button></div>
+</div>
+</sc-if>
+<sc-if value="{{ imp.isRunning }}" hint-placeholder-val="{{ false }}">
+<div class="card" style="padding: 20px; max-width: 720px; display: flex; flex-direction: column; gap: 10px">
+<div style="font-weight: 700">Analysing {{ imp.count }} messages…</div>
+<div class="riskbar" style="height: 10px" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ imp.progress }}"><div class="fill-info" style="{{ imp.progressStyle }}; background: var(--brand)"></div></div>
+<div class="meta">{{ imp.stage }}</div>
+</div>
+</sc-if>
+<sc-if value="{{ imp.isDone }}" hint-placeholder-val="{{ false }}">
+<div class="card pop bl-high" style="padding: 20px; max-width: 720px; display: flex; flex-direction: column; gap: 12px">
+<div style="font-size: 18px; font-weight: 800">{{ imp.result }}</div>
+<div class="muted">{{ imp.resultSub }}</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><button class="btn btn-primary" onClick="{{ imp.viewPerson }}">View person</button><button class="btn" onClick="{{ imp.cancel }}">Import another chat</button></div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ is.evidence }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<h1 style="margin: 4px 0 0; font-size: 22px; flex: 1">{{ t.evidence }}</h1>
+<label class="sr-only" for="evp">Person</label>
+<select id="evp" class="field" style="width: auto" value="{{ ev.pid }}" onChange="{{ ev.setPerson }}"><sc-for list="{{ peopleOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select>
+</div>
+<sc-if value="{{ ev.empty }}" hint-placeholder-val="{{ false }}">
+<div class="card" style="padding: 40px 20px; text-align: center"><p style="margin: 0 0 12px">No flagged items for {{ ev.name }}. Nothing to report.</p><button class="btn" onClick="{{ nav.people.go }}">Back to People</button></div>
+</sc-if>
+<sc-if value="{{ ev.hasItems }}" hint-placeholder-val="{{ true }}">
+<section class="card" style="padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><h2 style="margin: 0; font-size: 16px; flex: 1">Flagged items · {{ ev.name }}</h2><span class="meta">{{ ev.includedLabel }}</span></div>
+<div style="overflow-x: auto">
+<table class="tbl">
+<thead><tr><th scope="col">Include</th><th scope="col">Time</th><th scope="col">App / account</th><th scope="col">Message</th><th scope="col">Category</th><th scope="col">SHA-256</th></tr></thead>
+<tbody>
+<sc-for list="{{ ev.items }}" as="it" hint-placeholder-count="4">
+<tr>
+<td><input type="checkbox" checked="{{ it.inc }}" onChange="{{ it.toggle }}" aria-label="Include this item" style="width: 18px; height: 18px"></td>
+<td style="white-space: nowrap">{{ it.time }}</td>
+<td><div style="display: flex; gap: 6px; align-items: center"><span class="badge b-{{ it.app }}" style="width: 24px; height: 24px; font-size: 9px">{{ it.app }}</span><span>{{ it.acct }}</span></div></td>
+<td style="min-width: 220px">
+<sc-if value="{{ it.isMedia }}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; align-items: center"><div style="width: 48px; height: 36px; border-radius: 6px; background: linear-gradient(135deg, #93A4B7, #FDDBB8); filter: blur(4px)" aria-hidden="true"></div><span>{{ it.text }}</span></div></sc-if>
+<sc-if value="{{ it.isText }}" hint-placeholder-val="{{ true }}"><span>{{ it.text }}</span></sc-if>
+<sc-if value="{{ it.deleted }}" hint-placeholder-val="{{ false }}"><div><span class="tag" style="margin-top: 4px; display: inline-block">Deleted by sender · captured from notification</span></div></sc-if>
+</td>
+<td><span class="tag">{{ it.cat }}</span></td>
+<td><span class="mono muted">{{ it.hash }}</span></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+<button class="btn btn-primary" onClick="{{ ev.generate }}">{{ ev.genLabel }}</button>
+<sc-if value="{{ ev.generated }}" hint-placeholder-val="{{ false }}">
+<a class="btn" href="{{ ev.jsonUrl }}" download="{{ ev.jsonName }}">Download JSON</a>
+<button class="btn" onClick="{{ ev.pdf }}">Download PDF</button>
+<button class="btn btn-ghost" onClick="{{ ev.verify }}">Verify pack</button>
+</sc-if>
+</div>
+<sc-if value="{{ ev.generated }}" hint-placeholder-val="{{ false }}">
+<div style="padding: 12px 14px; border-radius: 12px; background: var(--surface2); display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<div style="flex: 1; min-width: 220px"><div class="meta" style="font-weight: 700">Pack fingerprint (SHA-256 over all included items)</div><div class="mono" style="margin-top: 4px">{{ ev.fingerprint }}</div></div>
+<button class="btn btn-sm" onClick="{{ ev.copyHash }}" aria-label="Copy pack fingerprint">Copy</button>
+</div>
+<sc-if value="{{ ev.hasVerify }}" hint-placeholder-val="{{ false }}"><div class="meta" style="color: var(--info-ink); font-weight: 700">{{ ev.verifyMsg }}</div></sc-if>
+</sc-if>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section class="card" style="flex: 1 1 340px; min-width: 0; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 16px">Pattern summary</h2>
+<div style="display: flex; height: 12px; border-radius: 99px; overflow: hidden; gap: 2px"><sc-for list="{{ ev.timeline }}" as="seg" hint-placeholder-count="4"><div style="{{ seg.style }}" title="{{ seg.tip }}"></div></sc-for></div>
+<div class="meta">{{ ev.timelineText }}</div>
+<h2 style="margin: 8px 0 0; font-size: 16px">Legal provisions that may apply</h2>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{ ev.laws }}" as="lw" hint-placeholder-count="3"><div style="padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px"><div style="font-weight: 700">{{ lw.s }}</div><div class="meta">{{ lw.d }}</div></div></sc-for>
+</div>
+<div class="meta">Plain-language summaries to help you talk to the police or a lawyer. This is not legal advice.</div>
+</section>
+<section class="card" style="flex: 1 1 340px; min-width: 0; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 8px"><h2 style="margin: 0; font-size: 16px; flex: 1">Pre-filled complaint</h2><button class="btn btn-sm btn-ghost" onClick="{{ ev.toggleEdit }}">{{ ev.editLabel }}</button><button class="btn btn-sm" onClick="{{ ev.copyComplaint }}">Copy complaint</button></div>
+<label class="sr-only" for="cmp">Complaint text</label>
+<textarea id="cmp" class="field" style="min-height: 260px; font-size: 13px" readOnly="{{ ev.readOnly }}" value="{{ ev.complaint }}" onChange="{{ ev.setComplaint }}"></textarea>
+</section>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 16px">Where to report</h2>
+<sc-if value="{{ ev.hasSuggest }}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 14px; border-radius: 10px; background: var(--brandSoft); color: var(--brandInk); font-weight: 600; white-space: pre-line">{{ ev.suggest }}</div></sc-if>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px">
+<sc-for list="{{ ev.channels }}" as="ch" hint-placeholder-count="6">
+<div class="card" style="{{ ch.style }}">
+<div style="display: flex; gap: 8px; align-items: center"><span style="font-weight: 800; flex: 1">{{ ch.name }}</span><sc-if value="{{ ch.first }}" hint-placeholder-val="{{ false }}"><span class="chip" style="background: var(--brand); color: #fff">Do this first</span></sc-if></div>
+<div class="meta" style="flex: 1">{{ ch.desc }}</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<sc-if value="{{ ch.hasLink }}" hint-placeholder-val="{{ false }}"><a class="btn btn-sm" href="{{ ch.link }}" target="_blank" rel="noopener">Open portal</a></sc-if>
+<sc-if value="{{ ch.hasTel }}" hint-placeholder-val="{{ false }}"><a class="btn btn-sm btn-primary" href="{{ ch.tel }}">{{ ch.telLabel }}</a></sc-if>
+<sc-if value="{{ ch.hasGuide }}" hint-placeholder-val="{{ false }}"><button class="btn btn-sm" onClick="{{ ch.guide }}">How to reach them</button></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-if>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ is.metrics }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<h1 style="margin: 4px 0 0; font-size: 22px; flex: 1">{{ t.metrics }}</h1>
+<label class="btn drop" style="position: relative">Load results<input class="sr-only" type="file" accept=".json,application/json" onChange="{{ met.load }}"></label>
+<button class="btn btn-primary" onClick="{{ met.run }}" disabled="{{ met.running }}">{{ met.runLabel }}</button>
+</div>
+<sc-if value="{{ met.sample }}" hint-placeholder-val="{{ true }}"><div class="card" style="padding: 12px 16px; background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; font-weight: 600">{{ met.sampleText }}</div></sc-if>
+<sc-if value="{{ met.loaded }}" hint-placeholder-val="{{ false }}"><div class="card" style="padding: 12px 16px; background: var(--info-bg); color: var(--info-ink); border-color: transparent; font-weight: 600">Showing results from {{ met.file }}.</div></sc-if>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
+<div class="card" style="padding: 16px"><div class="meta">False alarms on flirting and banter (lower is better)</div><div style="display: flex; gap: 14px; align-items: baseline; margin-top: 6px"><span style="font-size: 34px; font-weight: 800; color: var(--brandInk)">{{ met.farSS }}</span><span class="muted">vs {{ met.farKW }} keyword-only</span></div></div>
+<div class="card" style="padding: 16px"><div class="meta">Account-linking accuracy</div><div style="font-size: 34px; font-weight: 800; margin-top: 6px">{{ met.link }}</div></div>
+<div class="card" style="padding: 16px"><div class="meta">Test set</div><div style="font-size: 16px; font-weight: 700; margin-top: 6px">{{ met.dataset }}</div><div class="meta">{{ met.sources }}</div></div>
+</div>
+<section class="card" style="padding: 18px">
+<div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 14px"><h2 style="margin: 0; font-size: 16px; flex: 1">Keyword-only vs SafeSphere</h2>
+<span style="display: inline-flex; gap: 6px; align-items: center" class="meta"><span style="width: 12px; height: 12px; border-radius: 3px; background: #93A4B7"></span>Keyword-only</span>
+<span style="display: inline-flex; gap: 6px; align-items: center" class="meta"><span style="width: 12px; height: 12px; border-radius: 3px; background: var(--brand)"></span>SafeSphere</span></div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: end; height: 220px; border-bottom: 1px solid var(--line)" role="img" aria-label="{{ met.chartAria }}">
+<sc-for list="{{ met.bars }}" as="b" hint-placeholder-count="4">
+<div style="display: flex; gap: 6px; align-items: flex-end; justify-content: center; height: 100%">
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 36%"><span class="meta" style="font-weight: 700">{{ b.kw }}</span><div style="{{ b.kwStyle }}"></div></div>
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 36%"><span style="font-size: 12px; font-weight: 800; color: var(--brandInk)">{{ b.ss }}</span><div style="{{ b.ssStyle }}"></div></div>
+</div>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 8px"><sc-for list="{{ met.bars }}" as="b" hint-placeholder-count="4"><div style="text-align: center; font-weight: 700; font-size: 13px">{{ b.label }}</div></sc-for></div>
+</section>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section class="card" style="flex: 2 1 380px; min-width: 0; padding: 18px">
+<h2 style="margin: 0 0 10px; font-size: 16px">Per category</h2>
+<div style="overflow-x: auto"><table class="tbl"><thead><tr><th scope="col">Category</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">F1</th></tr></thead><tbody>
+<sc-for list="{{ met.cats }}" as="c" hint-placeholder-count="5"><tr><td style="font-weight: 700">{{ c.name }}</td><td>{{ c.p }}</td><td>{{ c.r }}</td><td style="font-weight: 700">{{ c.f }}</td></tr></sc-for>
+</tbody></table></div>
+</section>
+<section class="card" style="flex: 1 1 280px; min-width: 0; padding: 18px">
+<div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px"><h2 style="margin: 0; font-size: 16px; flex: 1">Confusion matrix</h2>
+<label class="sr-only" for="cmc">Category</label><select id="cmc" class="field" style="width: auto; min-height: 34px" value="{{ met.cmCat }}" onChange="{{ met.setCm }}"><sc-for list="{{ met.cats }}" as="c" hint-placeholder-count="5"><option value="{{ c.name }}">{{ c.name }}</option></sc-for></select></div>
+<div style="display: grid; grid-template-columns: 90px repeat(2, minmax(0, 1fr)); gap: 4px; font-size: 13px">
+<div></div><div class="meta" style="text-align: center">Predicted yes</div><div class="meta" style="text-align: center">Predicted no</div>
+<div class="meta" style="align-self: center">Actual yes</div><div style="{{ met.cm.tpStyle }}">{{ met.cm.tp }}</div><div style="{{ met.cm.fnStyle }}">{{ met.cm.fn }}</div>
+<div class="meta" style="align-self: center">Actual no</div><div style="{{ met.cm.fpStyle }}">{{ met.cm.fp }}</div><div style="{{ met.cm.tnStyle }}">{{ met.cm.tn }}</div>
+</div>
+</section>
+</div>
+<section class="card" style="padding: 18px">
+<h2 style="margin: 0 0 10px; font-size: 16px">Deepfake detection</h2>
+<div style="overflow-x: auto"><table class="tbl"><thead><tr><th scope="col">Type</th><th scope="col">Detection rate</th><th scope="col">False-alarm rate</th></tr></thead><tbody>
+<sc-for list="{{ met.deep }}" as="d" hint-placeholder-count="3"><tr><td style="font-weight: 700">{{ d.t }}</td><td>{{ d.dr }}</td><td>{{ d.fa }}</td></tr></sc-for>
+</tbody></table></div>
+<div class="meta" style="margin-top: 10px">Expected JSON for Load results: {"overall":{"keyword":{"precision":0.58,…},"safesphere":{…}},"categories":[{"name":"Stalking","precision":0.88,"recall":0.84,"f1":0.86}],"banter_false_alarm":{"keyword":0.31,"safesphere":0.06}}</div>
+</section>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ is.slang }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h1 style="margin: 4px 0 0; font-size: 22px">{{ t.slang }}</h1>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section class="card" style="flex: 3 1 460px; min-width: 0; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<label class="sr-only" for="sq">Search terms</label><input id="sq" class="field" style="flex: 1 1 180px; width: auto" placeholder="Search terms" value="{{ slang.q }}" onChange="{{ slang.setQ }}">
+<label class="sr-only" for="sc">Category</label><select id="sc" class="field" style="width: auto" value="{{ slang.cat }}" onChange="{{ slang.setCat }}"><option value="">All categories</option><sc-for list="{{ slang.catOpts }}" as="c" hint-placeholder-count="4"><option value="{{ c }}">{{ c }}</option></sc-for></select>
+<button class="btn btn-primary" onClick="{{ slang.toggleAdd }}">+ Add term</button>
+</div>
+<sc-if value="{{ slang.adding }}" hint-placeholder-val="{{ false }}">
+<div class="pop" style="padding: 14px; border: 1px solid var(--line); border-radius: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end">
+<div><label for="nt" class="meta" style="font-weight: 700">Term</label><input id="nt" class="field" value="{{ slang.form.term }}" onChange="{{ slang.setTerm }}"></div>
+<div><label for="nc" class="meta" style="font-weight: 700">Category</label><select id="nc" class="field" value="{{ slang.form.cat }}" onChange="{{ slang.setFCat }}"><sc-for list="{{ slang.catOpts }}" as="c" hint-placeholder-count="4"><option value="{{ c }}">{{ c }}</option></sc-for></select></div>
+<div><label for="ns" class="meta" style="font-weight: 700">Severity</label><select id="ns" class="field" value="{{ slang.form.sev }}" onChange="{{ slang.setFSev }}"><option value="warn">Warn</option><option value="high">High</option><option value="critical">Critical</option></select></div>
+<div><label for="nv" class="meta" style="font-weight: 700">Variants (comma separated)</label><input id="nv" class="field" value="{{ slang.form.variants }}" onChange="{{ slang.setVar }}"></div>
+<div style="display: flex; gap: 6px"><button class="btn" onClick="{{ slang.suggest }}">Suggest variants</button><button class="btn btn-primary" onClick="{{ slang.save }}">Save</button></div>
+</div>
+</sc-if>
+<div style="overflow-x: auto"><table class="tbl"><thead><tr><th scope="col">Term</th><th scope="col">Category</th><th scope="col">Severity</th><th scope="col">Variants</th><th scope="col">Source</th><th scope="col">Added</th></tr></thead><tbody>
+<sc-for list="{{ slang.terms }}" as="tm" hint-placeholder-count="6"><tr><td class="mono" style="font-size: 13px; font-weight: 700">{{ tm.term }}</td><td>{{ tm.cat }}</td><td><span class="chip {{ tm.sevClass }}"><span class="dot"></span>{{ tm.sevLabel }}</span></td><td class="mono muted">{{ tm.variants }}</td><td><span class="tag">{{ tm.src }}</span></td><td class="meta">{{ tm.date }}</td></tr></sc-for>
+</tbody></table></div>
+</section>
+<aside style="flex: 2 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<section class="card" style="padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 16px">Pending suggestions</h2>
+<sc-if value="{{ slang.noPending }}" hint-placeholder-val="{{ false }}"><div class="meta">Nothing waiting for review.</div></sc-if>
+<sc-for list="{{ slang.pending }}" as="pn" hint-placeholder-count="3">
+<div style="padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; gap: 8px; align-items: center"><span class="mono" style="font-size: 13px; font-weight: 700; flex: 1">{{ pn.term }}</span><span class="tag">{{ pn.src }}</span></div>
+<div class="meta">{{ pn.note }}</div>
+<div style="display: flex; gap: 6px"><button class="btn btn-sm btn-primary" onClick="{{ pn.approve }}">Approve</button><button class="btn btn-sm" onClick="{{ pn.reject }}">Reject</button><button class="btn btn-sm btn-ghost" onClick="{{ pn.edit }}">Edit</button></div>
+</div>
+</sc-for>
+</section>
+<section class="card" style="padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 16px">Test a message</h2>
+<label class="sr-only" for="tst">Message to test</label>
+<textarea id="tst" class="field" value="{{ slang.test }}" onChange="{{ slang.setTest }}"></textarea>
+<div class="meta">Normalised</div>
+<div class="mono" style="font-size: 13px; padding: 10px; background: var(--surface2); border-radius: 10px; line-height: 1.9"><sc-for list="{{ slang.tokens }}" as="tk" hint-placeholder-count="6"><span style="{{ tk.style }}">{{ tk.w }}</span> </sc-for></div>
+<div class="meta">{{ slang.matchText }}</div>
+</section>
+<section class="card" style="padding: 18px">
+<h2 style="margin: 0 0 10px; font-size: 16px">Change log</h2>
+<sc-for list="{{ slang.log }}" as="lg" hint-placeholder-count="3"><div style="padding: 6px 0; border-bottom: 1px solid var(--line)">{{ lg.t }} <span class="meta">· {{ lg.when }}</span></div></sc-for>
+</section>
+</aside>
+</div>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ is.settings }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 860px">
+<h1 style="margin: 4px 0 0; font-size: 22px">{{ t.settings }}</h1>
+<sc-for list="{{ set.groups }}" as="g" hint-placeholder-count="4">
+<section class="card" style="padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 16px">{{ g.title }}</h2>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+<div style="display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap">
+<div style="flex: 1; min-width: 200px"><div style="font-weight: 600">{{ r.label }}</div><sc-if value="{{ r.hasHint }}" hint-placeholder-val="{{ false }}"><div class="meta">{{ r.hint }}</div></sc-if></div>
+<sc-if value="{{ r.isSwitch }}" hint-placeholder-val="{{ false }}"><button class="switch {{ r.onCls }}" role="switch" aria-checked="{{ r.on }}" aria-label="{{ r.label }}" onClick="{{ r.toggle }}"></button></sc-if>
+<sc-if value="{{ r.isSeg }}" hint-placeholder-val="{{ false }}"><div class="seg" role="group" aria-label="{{ r.label }}"><sc-for list="{{ r.opts }}" as="o" hint-placeholder-count="3"><button class="{{ o.cls }}" onClick="{{ o.pick }}">{{ o.label }}</button></sc-for></div></sc-if>
+<sc-if value="{{ r.isBtn }}" hint-placeholder-val="{{ false }}"><button class="{{ r.btnCls }}" onClick="{{ r.click }}">{{ r.btn }}</button></sc-if>
+<sc-if value="{{ r.isText }}" hint-placeholder-val="{{ false }}"><span class="muted">{{ r.value }}</span></sc-if>
+</div>
+</sc-for>
+</section>
+</sc-for>
+</div>
+</sc-if>
+
+</main>
+</div>
+
+
+<div aria-live="polite" style="position: fixed; right: 16px; bottom: 16px; z-index: 60; max-width: min(380px, calc(100vw - 32px))">
+<sc-if value="{{ toast.show }}" hint-placeholder-val="{{ false }}">
+<div class="card pop {{ toast.border }}" style="padding: 14px 16px; display: flex; gap: 12px; align-items: center">
+<span style="flex: 1">{{ toast.text }}</span>
+<sc-if value="{{ toast.hasAction }}" hint-placeholder-val="{{ false }}"><button class="btn btn-sm" onClick="{{ toast.action }}">{{ toast.actionLabel }}</button></sc-if>
+<button class="btn btn-sm btn-ghost" onClick="{{ toast.close }}" aria-label="Close message">×</button>
+</div>
+</sc-if>
+</div>
+
+
+<sc-if value="{{ dlg.show }}" hint-placeholder-val="{{ false }}">
+<div style="position: fixed; inset: 0; z-index: 70; background: rgba(15,12,25,.5); display: grid; place-items: center; padding: 16px">
+<div class="card pop" role="dialog" aria-modal="true" aria-labelledby="dlgt" style="width: 100%; max-width: 480px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+<h2 id="dlgt" style="margin: 0; font-size: 18px">{{ dlg.title }}</h2>
+<div style="white-space: pre-line">{{ dlg.body }}</div>
+<sc-if value="{{ dlg.isMerge }}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div><label for="ma" class="meta" style="font-weight: 700">Keep</label><select id="ma" class="field" value="{{ dlg.a }}" onChange="{{ dlg.setA }}"><sc-for list="{{ peopleOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select></div>
+<div><label for="mb" class="meta" style="font-weight: 700">Merge into it</label><select id="mb" class="field" value="{{ dlg.b }}" onChange="{{ dlg.setB }}"><sc-for list="{{ peopleOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select></div>
+</div>
+</sc-if>
+<div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap">
+<button class="btn btn-ghost" onClick="{{ dlg.cancel }}">{{ dlg.cancelLabel }}</button>
+<sc-if value="{{ dlg.hasOk }}" hint-placeholder-val="{{ true }}"><button class="{{ dlg.okCls }}" onClick="{{ dlg.ok }}">{{ dlg.okLabel }}</button></sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ panic.open }}" hint-placeholder-val="{{ false }}">
+<div style="position: fixed; inset: 0; z-index: 80; background: var(--bg); overflow-y: auto">
+<div role="dialog" aria-modal="true" aria-labelledby="pnh" style="max-width: 760px; margin: 0 auto; padding: 28px 16px 40px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; align-items: center; gap: 10px"><span class="chip sev-critical"><span class="dot"></span>Critical</span><div style="flex: 1"></div><button class="btn btn-sm" onClick="{{ quickExit }}" style="border-color: var(--ink)">{{ t.exit }}</button></div>
+<div>
+<h1 id="pnh" style="margin: 0; font-size: 28px; letter-spacing: -.01em">You're not alone. This is not your fault.</h1>
+<p class="muted" style="margin: 8px 0 0; font-size: 16px">{{ panic.what }}</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<div class="card" style="padding: 18px 10px; text-align: center"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d6264f" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m5.7 5.7 12.6 12.6"></path></svg><div style="font-weight: 800; font-size: 17px; margin-top: 6px">Don't pay</div><div class="meta">Paying almost always leads to more demands.</div></div>
+<div class="card" style="padding: 18px 10px; text-align: center"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d6264f" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path><path d="M4 4l16 16"></path></svg><div style="font-weight: 800; font-size: 17px; margin-top: 6px">Don't delete</div><div class="meta">The messages are your evidence.</div></div>
+<div class="card" style="padding: 18px 10px; text-align: center"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d6264f" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="m9 8 6 6M15 8l-6 6"></path></svg><div style="font-weight: 800; font-size: 17px; margin-top: 6px">Don't reply</div><div class="meta">Replying tells them you are scared.</div></div>
+</div>
+<a class="btn btn-danger" href="tel:1930" style="min-height: 56px; font-size: 17px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"></path></svg>Call 1930 (Cyber Crime Helpline)</a>
+<section class="card" style="padding: 18px">
+<h2 style="margin: 0 0 10px; font-size: 16px">Step by step · {{ panic.doneCount }} of 5 done</h2>
+<sc-for list="{{ panic.steps }}" as="ps" hint-placeholder-count="5">
+<label style="display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); cursor: pointer; min-height: 44px">
+<input type="checkbox" checked="{{ ps.done }}" onChange="{{ ps.toggle }}" style="width: 20px; height: 20px">
+<span style="{{ ps.style }}">{{ ps.label }}</span>
+</label>
+</sc-for>
+</section>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px">
+<a class="btn" href="https://stopncii.org" target="_blank" rel="noopener">Open StopNCII</a>
+<a class="btn" href="https://cybercrime.gov.in" target="_blank" rel="noopener">Report online</a>
+<button class="btn" onClick="{{ panic.trusted }}">Alert trusted contact</button>
+<button class="btn" onClick="{{ panic.evidence }}">View evidence</button>
+</div>
+<button class="btn btn-ghost" onClick="{{ panic.close }}" style="align-self: center">I'm safe for now</button>
+<div class="card" style="padding: 14px 16px; background: var(--surface2); border-color: transparent">Feeling overwhelmed? Tele-MANAS is free and open 24×7: <a href="tel:14416" style="font-weight: 700">14416</a>. In danger right now, call <a href="tel:112" style="font-weight: 700">112</a>.</div>
+</div>
+</div>
+</sc-if>
+</sc-if>
+</div>
+

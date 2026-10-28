@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# secrets
+backend/.env
+.env
+
+# generated data and training outputs (re-create with the Colab notebook / scripts)
+ml/behavior/data/
+ml/behavior/models/
+ml/behavior/reports/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/

@@ -1,0 +1,101 @@
+{
+  "silent_stalker": {
+    "title": "Silent stalker: 3 accounts, keeps going after a no",
+    "relationship": "acquaintance",
+    "events": [
+      {"t": "-5 20:10", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "hi"},
+      {"t": "-5 20:12", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "hello"},
+      {"t": "-5 20:15", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "kaisi ho"},
+      {"t": "-5 21:30", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "hmm", "is_user": true},
+      {"t": "-4 00:40", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "good night"},
+      {"t": "-4 01:10", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "reply na 🥺"},
+      {"t": "-4 01:11", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "??"},
+      {"t": "-4 01:12", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "why are you online but not replying"},
+      {"t": "-4 01:14", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "hello??"},
+      {"t": "-4 08:05", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "good morning"},
+      {"t": "-4 13:20", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "aaj college aayi thi?"},
+      {"t": "-4 15:00", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "please stop messaging me", "is_user": true},
+      {"t": "-4 15:02", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "itna attitude kyu"},
+      {"t": "-4 15:03", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "ek baar baat kar lo"},
+      {"t": "-3 01:30", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "reply na"},
+      {"t": "-3 01:31", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": null},
+      {"t": "-3 01:32", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": null},
+      {"t": "-3 01:35", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "kab tak ignore karogi"},
+      {"t": "-3 18:40", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "saw you outside college today"},
+      {"t": "-3 18:41", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "who were you with"},
+      {"t": "-3 19:00", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "text": "i said no", "is_user": true},
+      {"t": "-3 19:05", "app": "wa", "sender": "Rahul K", "sender_handle": "+919800004410", "event": "block", "is_user": true},
+      {"t": "-2 01:15", "app": "ig", "sender": "rahul.k_02", "text": "block kyu kiya 🙂"},
+      {"t": "-2 01:16", "app": "ig", "sender": "rahul.k_02", "text": "reply na 🥺"},
+      {"t": "-2 01:17", "app": "ig", "sender": "rahul.k_02", "text": "new account bana liya, ab?"},
+      {"t": "-2 02:40", "app": "ig", "sender": "rahul.k_02", "text": null},
+      {"t": "-2 02:41", "app": "ig", "sender": "rahul.k_02", "text": "where are you right now"},
+      {"t": "-2 23:50", "app": "ig", "sender": "rahul.k_02", "text": "why are you avoiding me"},
+      {"t": "-1 00:10", "app": "ig", "sender": "rahul.k_02", "text": "i'll keep texting till you reply"},
+      {"t": "-1 00:30", "app": "ig", "sender": "rahul.k_02", "text": "tum kiske saath thi kal"},
+      {"t": "-1 09:00", "app": "ig", "sender": "rahul.k_02", "event": "block", "is_user": true},
+      {"t": "-1 13:30", "app": "ig", "sender": "r4hul__k", "text": "hi 🙂 reply na"},
+      {"t": "-1 13:31", "app": "ig", "sender": "r4hul__k", "text": "kab tak block karogi"},
+      {"t": "-1 22:45", "app": "ig", "sender": "r4hul__k", "text": "red dress me thi na aaj"},
+      {"t": "-1 22:46", "app": "ig", "sender": "r4hul__k", "text": "i know where you live"},
+      {"t": "0 01:20", "app": "ig", "sender": "r4hul__k", "text": "reply na please"},
+      {"t": "0 01:21", "app": "ig", "sender": "r4hul__k", "text": null},
+      {"t": "0 02:05", "app": "ig", "sender": "r4hul__k", "text": "i'm outside your house"}
+    ]
+  },
+  "mutual_flirt": {
+    "title": "Mutual flirting: should stay safe",
+    "relationship": "partner",
+    "events": [
+      {"t": "-4 18:30", "app": "wa", "sender": "Arjun", "text": "hey, coffee kal?"},
+      {"t": "-4 18:34", "app": "wa", "sender": "Arjun", "text": "haan chalo 😊", "is_user": true},
+      {"t": "-4 18:35", "app": "wa", "sender": "Arjun", "text": "kahan milein?", "is_user": true},
+      {"t": "-4 18:40", "app": "wa", "sender": "Arjun", "text": "college ke paas wala cafe"},
+      {"t": "-3 19:10", "app": "wa", "sender": "Arjun", "text": "you looked really cute today"},
+      {"t": "-3 19:12", "app": "wa", "sender": "Arjun", "text": "hehe stop it 😂 you too", "is_user": true},
+      {"t": "-3 19:14", "app": "wa", "sender": "Arjun", "text": "miss you already", "is_user": true},
+      {"t": "-3 19:15", "app": "wa", "sender": "Arjun", "text": "miss you too ❤️"},
+      {"t": "-2 12:20", "app": "wa", "sender": "Arjun", "text": "lunch kya tha"},
+      {"t": "-2 12:25", "app": "wa", "sender": "Arjun", "text": "rajma chawal, tumhara?", "is_user": true},
+      {"t": "-2 12:27", "app": "wa", "sender": "Arjun", "text": "same 😄"},
+      {"t": "-1 17:00", "app": "wa", "sender": "Arjun", "text": "movie dekhi?", "is_user": true},
+      {"t": "-1 17:05", "app": "wa", "sender": "Arjun", "text": "haan, amazing thi, saath me dekhte next time"},
+      {"t": "-1 17:06", "app": "wa", "sender": "Arjun", "text": "pakka 😊", "is_user": true},
+      {"t": "-1 22:30", "app": "wa", "sender": "Arjun", "text": "good night 😊"},
+      {"t": "-1 22:32", "app": "wa", "sender": "Arjun", "text": "gn ❤️", "is_user": true}
+    ]
+  },
+  "friend_banter": {
+    "title": "Friends swearing at each other: banter, should stay safe",
+    "relationship": "friend",
+    "events": [
+      {"t": "-3 16:00", "app": "wa", "sender": "Aman", "text": "abe saale kal ka match dekha 😂"},
+      {"t": "-3 16:02", "app": "wa", "sender": "Aman", "text": "haha chal be, tu toh so gaya tha", "is_user": true},
+      {"t": "-3 16:03", "app": "wa", "sender": "Aman", "text": "chup kar be kamine"},
+      {"t": "-3 16:05", "app": "wa", "sender": "Aman", "text": "😂😂 noob", "is_user": true},
+      {"t": "-3 16:06", "app": "wa", "sender": "Aman", "text": "bhai kal practical hai?", "is_user": true},
+      {"t": "-3 16:10", "app": "wa", "sender": "Aman", "text": "haan 10 baje, notes bhej de"},
+      {"t": "-2 11:00", "app": "wa", "sender": "Aman", "text": "notes bhej diye, treat chahiye", "is_user": true},
+      {"t": "-2 11:04", "app": "wa", "sender": "Aman", "text": "thanks yaar, tu best hai"},
+      {"t": "-2 20:15", "app": "wa", "sender": "Aman", "text": "abe gadhe phone kyu nahi uthaya"},
+      {"t": "-2 20:20", "app": "wa", "sender": "Aman", "text": "lol khana kha raha tha", "is_user": true},
+      {"t": "-1 14:30", "app": "wa", "sender": "Aman", "text": "saale treat de result aaya"},
+      {"t": "-1 14:35", "app": "wa", "sender": "Aman", "text": "pakka, kal canteen 😂", "is_user": true},
+      {"t": "-1 14:36", "app": "wa", "sender": "Aman", "text": "tu bhi aa jana kamine", "is_user": true},
+      {"t": "-1 14:40", "app": "wa", "sender": "Aman", "text": "done bhai 👍"}
+    ]
+  },
+  "sextortion": {
+    "title": "Stranger: flirting, then a photo, then a money demand",
+    "events": [
+      {"t": "0 19:00", "app": "ig", "sender": "priv_x_771", "text": "hi"},
+      {"t": "0 19:02", "app": "ig", "sender": "priv_x_771", "text": "you're so pretty"},
+      {"t": "0 19:10", "app": "ig", "sender": "priv_x_771", "text": "video call pe aao akele"},
+      {"t": "0 19:20", "app": "ig", "sender": "priv_x_771", "text": "no", "is_user": true},
+      {"t": "0 20:00", "app": "ig", "sender": "priv_x_771", "text": "📷 Photo", "media_type": "image"},
+      {"t": "0 20:01", "app": "ig", "sender": "priv_x_771", "text": "your morphed photo is ready"},
+      {"t": "0 20:02", "app": "ig", "sender": "priv_x_771", "text": "10k bhej warna ye photo sabko bhej dunga"},
+      {"t": "0 21:00", "app": "ig", "sender": "priv_x_771", "text": "upi kar warna insta pe daal dunga"}
+    ]
+  }
+}

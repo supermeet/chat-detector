@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SafeSphere</title>
+<style>
+:root{
+  --bg:#f6f7fb; --panel:#ffffff; --panel2:#f0f2f8; --text:#151826; --muted:#646b82; --line:#e3e6ef;
+  --brand:#6d4aff; --brand2:#8f74ff;
+  --info:#2f9e6e; --warn:#c98a00; --high:#e2622b; --crit:#d6264f;
+  --info-bg:#e5f6ee; --warn-bg:#fdf3dc; --high-bg:#fdebe2; --crit-bg:#fde4ea;
+  --shadow:0 1px 2px rgba(20,22,40,.06),0 4px 16px rgba(20,22,40,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1018; --panel:#161925; --panel2:#1d2131; --text:#e9ebf3; --muted:#9097ad; --line:#272b3c;
+    --info-bg:#123326; --warn-bg:#3a2e0e; --high-bg:#3c1f12; --crit-bg:#42121f;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1018; --panel:#161925; --panel2:#1d2131; --text:#e9ebf3; --muted:#9097ad; --line:#272b3c;
+  --info-bg:#123326; --warn-bg:#3a2e0e; --high-bg:#3c1f12; --crit-bg:#42121f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;cursor:pointer}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+nav{background:var(--panel);border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;padding:4px 8px 18px}
+.logo .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;color:#fff}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:none;color:var(--muted);text-align:left;margin-bottom:2px}
+.nav-btn:hover{background:var(--panel2);color:var(--text)}
+.nav-btn.active{background:var(--panel2);color:var(--brand);font-weight:600}
+.nav-btn .count{margin-left:auto;background:var(--crit);color:#fff;border-radius:999px;font-size:11px;padding:0 7px;display:none}
+.nav-foot{position:absolute;bottom:16px;left:12px;right:12px;font-size:12px;color:var(--muted);padding:10px;border:1px solid var(--line);border-radius:10px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--info);margin-right:6px}
+main{padding:24px 28px;max-width:1200px;width:100%}
+header.top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+header.top h1{font-size:22px;margin:0}
+header.top p{margin:0;color:var(--muted)}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:10px}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.danger{background:var(--crit);border-color:var(--crit);color:#fff}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px}
+.card h3{margin:0 0 12px;font-size:15px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:1.4fr 1fr}
+.stat .v{font-size:26px;font-weight:700}
+.stat .l{color:var(--muted);font-size:12.5px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.lv-info{background:var(--info-bg);color:var(--info)} .lv-warn{background:var(--warn-bg);color:var(--warn)}
+.lv-high{background:var(--high-bg);color:var(--high)} .lv-crit{background:var(--crit-bg);color:var(--crit)}
+.tag{font-size:11px;padding:1px 7px;border-radius:6px;background:var(--panel2);color:var(--muted);margin-right:4px}
+.view{display:none} .view.active{display:block}
+/* feed */
+.phone{background:var(--panel2);border-radius:22px;padding:14px;min-height:420px;max-height:560px;overflow:auto}
+.notif{display:flex;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.appic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex:none}
+.wa{background:#25d366}.ig{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af)}.tg{background:#229ed9}.sms{background:#5f6b85}
+.notif .who{font-weight:600}
+.notif .meta{color:var(--muted);font-size:11.5px}
+.notif .txt{margin:2px 0 4px}
+.notif.flag-high{border-left:4px solid var(--high)} .notif.flag-crit{border-left:4px solid var(--crit)} .notif.flag-warn{border-left:4px solid var(--warn)}
+.empty{color:var(--muted);text-align:center;padding:60px 10px}
+.alert{border-radius:12px;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);animation:pop .35s ease}
+.alert.crit{background:var(--crit-bg);border-color:transparent}
+.alert.high{background:var(--high-bg);border-color:transparent}
+.alert b{display:block}
+.alert small{color:var(--muted)}
+/* people */
+.person{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:12px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+.person:hover{background:var(--panel2)}
+.person.sel{border-color:var(--brand);background:var(--panel2)}
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff}
+.bar{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:99px}
+.acct{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.acct:last-child{border:0}
+.acct .appic{width:26px;height:26px;font-size:11px;border-radius:7px}
+.reasons li{margin-bottom:4px}
+.consent{display:flex;gap:0;margin:12px 0 4px}
+.consent div{flex:1;text-align:center;font-size:11.5px;padding:6px 4px;color:#fff}
+.consent div:first-child{border-radius:8px 0 0 8px}.consent div:last-child{border-radius:0 8px 8px 0}
+.featrow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line);font-size:13px}
+/* media */
+.drop{border:2px dashed var(--line);border-radius:14px;padding:30px;text-align:center;color:var(--muted);cursor:pointer}
+.drop:hover{border-color:var(--brand)}
+.preview{max-width:100%;max-height:220px;border-radius:10px;margin-top:10px;filter:blur(14px)}
+.step{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.step .st{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:12px}
+.step.run .st{border-color:var(--brand);border-top-color:transparent;animation:spin .8s linear infinite}
+.step.ok .st{background:var(--crit);border-color:var(--crit);color:#fff}
+.step.pass .st{background:var(--info);border-color:var(--info);color:#fff}
+@keyframes spin{to{transform:rotate(360deg)}}
+.step .r{margin-left:auto;font-weight:600}
+.verdict{margin-top:14px;padding:14px;border-radius:12px;background:var(--crit-bg);display:none}
+.verdict h4{margin:0 0 6px;color:var(--crit)}
+/* evidence */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.hash{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--muted);word-break:break-all}
+.channels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ch{border:1px solid var(--line);border-radius:12px;padding:12px}
+.ch b{display:block}
+.ch small{color:var(--muted)}
+/* metrics */
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--muted);margin-bottom:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.toast{position:fixed;right:20px;bottom:20px;max-width:340px;background:var(--crit);color:#fff;padding:14px 16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.25);display:none;z-index:9}
+.toast b{display:block}
+.mobile-tabs{display:none}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  nav{display:none}
+  .mobile-tabs{display:flex;overflow-x:auto;gap:6px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  .mobile-tabs .nav-btn{width:auto;white-space:nowrap;margin:0}
+  main{padding:16px}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .g2,.channels{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav id="nav">
+    <div class="logo"><div class="mark">S</div>SafeSphere</div>
+    <button class="nav-btn active" data-view="feed">📡 Live Feed <span class="count" id="alertCount">0</span></button>
+    <button class="nav-btn" data-view="people">👤 People</button>
+    <button class="nav-btn" data-view="media">🖼️ Media Check</button>
+    <button class="nav-btn" data-view="import">📥 Import Chat</button>
+    <button class="nav-btn" data-view="evidence">🧾 Evidence & Report</button>
+    <button class="nav-btn" data-view="metrics">📊 Metrics</button>
+    <div class="nav-foot"><span class="dot"></span>Protection active<br>Processed on device · Clean messages never uploaded</div>
+  </nav>
+  <div>
+  <div class="mobile-tabs" id="mtabs"></div>
+  <main>
+
+  <!-- LIVE FEED -->
+  <section class="view active" id="feed">
+    <header class="top">
+      <div><h1>Live Feed</h1><p>Messages from WhatsApp, Instagram, Telegram and SMS notifications, analysed in real time</p></div>
+      <div class="spacer"></div>
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn primary" id="simBtn">▶ Start simulation</button>
+    </header>
+    <div class="grid g4" style="margin-bottom:16px">
+      <div class="card stat"><div class="v" id="sMsgs">0</div><div class="l">Messages scanned</div></div>
+      <div class="card stat"><div class="v" id="sPeople">0</div><div class="l">People tracked</div></div>
+      <div class="card stat"><div class="v" id="sFlag" style="color:var(--high)">0</div><div class="l">Flagged messages</div></div>
+      <div class="card stat"><div class="v" id="sCrit" style="color:var(--crit)">0</div><div class="l">Critical alerts</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Incoming notifications</h3><div class="phone" id="phone"><div class="empty">Press <b>Start simulation</b> to stream a scripted demo chat in the notification format.</div></div></div>
+      <div class="card"><h3>Alerts</h3><div id="alerts"><div class="empty">No alerts yet</div></div></div>
+    </div>
+  </section>
+
+  <!-- PEOPLE -->
+  <section class="view" id="people">
+    <header class="top"><div><h1>People</h1><p>Accounts linked into one person, scored on behaviour and consent</p></div></header>
+    <div class="grid g2">
+      <div class="card"><h3>Ranked by risk</h3><div id="personList"></div></div>
+      <div class="card" id="personDetail"></div>
+    </div>
+  </section>
+
+  <!-- MEDIA -->
+  <section class="view" id="media">
+    <header class="top"><div><h1>Media Check</h1><p>Image, video or voice note → nudity check · face match · deepfake model · context</p></div></header>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Upload media</h3>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept="image/*,video/*,audio/*" hidden>
+          <div style="font-size:30px">⬆️</div>
+          Drop an image, video or audio file, or click to choose<br><small>The preview stays blurred to protect you</small>
+          <div id="prevWrap"></div>
+        </label>
+        <div style="margin-top:12px"><label class="tag">Context message</label>
+          <div style="margin-top:6px;padding:10px;border-radius:10px;background:var(--panel2)">"10k bhej warna ye photo sabko bhej dunga" ("Send 10k or I'll send this photo to everyone") — <i>unknown IG account</i></div></div>
+      </div>
+      <div class="card">
+        <h3>Analysis pipeline</h3>
+        <div id="steps"></div>
+        <div class="verdict" id="verdict">
+          <h4>🔴 CRITICAL — likely AI sextortion</h4>
+          <div>Manipulated intimate image that matches <b>your face</b>, sent with a money demand.</div>
+          <ul style="margin:8px 0 10px;padding-left:18px">
+            <li><b>Don't pay, don't delete, don't reply.</b></li>
+            <li>Hash the image on StopNCII.org to block re-uploads</li>
+            <li>Call <b>1930</b> and report on cybercrime.gov.in</li>
+          </ul>
+          <button class="btn danger" data-goto="evidence">Generate evidence pack →</button>
+        </div>
+        <p class="note">Demo results. Connect your models at <code>POST /detect/{image|video|audio}</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPORT -->
+  <section class="view" id="import">
+    <header class="top"><div><h1>Import Chat</h1><p>Add history and both sides of the conversation for consent-aware analysis</p></div></header>
+    <div class="grid g4">
+      <div class="card"><h3>💬 WhatsApp</h3><p class="note">Chat → ⋮ → More → Export chat → share the .txt to SafeSphere</p><button class="btn">Upload .txt</button></div>
+      <div class="card"><h3>📸 Instagram</h3><p class="note">Settings → Your activity → Download your information → messages JSON</p><button class="btn">Upload .json</button></div>
+      <div class="card"><h3>🖼️ Screenshots</h3><p class="note">OCR reads text from screenshots of any app. Works on iPhone too.</p><button class="btn">Upload images</button></div>
+      <div class="card"><h3>✈️ Telegram</h3><p class="note">Desktop → Export chat history → JSON</p><button class="btn">Upload .json</button></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Why import?</h3>
+      <p class="note" style="font-size:13.5px">Notifications show only incoming messages, and sometimes no text at all. SafeSphere still scores behaviour from metadata (who, how often, when). Imports add <b>your replies</b>, which is how we tell mutual flirting from harassment.</p>
+    </div>
+  </section>
+
+  <!-- EVIDENCE -->
+  <section class="view" id="evidence">
+    <header class="top">
+      <div><h1>Evidence & Report</h1><p>Tamper-evident pack: every item gets a SHA-256 fingerprint</p></div>
+      <div class="spacer"></div>
+      <select class="btn" id="evPerson"></select>
+      <button class="btn primary" id="genBtn">Generate pack</button>
+      <button class="btn" id="dlBtn" disabled>⬇ Download JSON</button>
+    </header>
+    <div class="card" style="margin-bottom:16px">
+      <h3 id="evTitle">Flagged items</h3>
+      <div style="overflow-x:auto"><table><thead><tr><th>Time</th><th>App / account</th><th>Message</th><th>Category</th><th>SHA-256</th></tr></thead><tbody id="evRows"></tbody></table></div>
+      <div class="note" id="packHash"></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Possible legal provisions</h3><div id="laws"></div><p class="note">Check with a legal adviser. This isn't legal advice.</p></div>
+      <div class="card"><h3>Pre-filled complaint</h3><div id="complaint" style="white-space:pre-wrap;font-size:12.5px;background:var(--panel2);padding:12px;border-radius:10px"></div></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h3>Report to</h3>
+      <div class="channels">
+        <div class="ch"><b>🛡️ cybercrime.gov.in</b><small>"Women/Child related crime" section · anonymous reporting allowed</small></div>
+        <div class="ch"><b>📞 1930</b><small>Cyber financial fraud helpline: call right away if money was demanded</small></div>
+        <div class="ch"><b>🔒 StopNCII.org</b><small>Fingerprints the image on your device and blocks re-uploads</small></div>
+        <div class="ch"><b>👩 NCW / 181</b><small>National Commission for Women complaint · women's helpline</small></div>
+        <div class="ch"><b>🏢 Platform grievance officer</b><small>IT Rules 2026: remove intimate images within 2 h, other unlawful content within 3 h</small></div>
+        <div class="ch"><b>🚨 112</b><small>Immediate danger · alert a trusted contact</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <section class="view" id="metrics">
+    <header class="top"><div><h1>Metrics</h1><p>Evaluation on a held-out labelled test set</p></div></header>
+    <div class="grid g2">
+      <div class="card"><h3>Stalking detection: keyword filter vs SafeSphere behaviour model</h3>
+        <div class="legend"><span><i style="background:#9aa1b5"></i>Keyword only</span><span><i style="background:var(--brand)"></i>SafeSphere</span></div>
+        <svg id="chart" viewBox="0 0 520 260" width="100%" role="img" aria-label="Comparison bar chart"></svg>
+        <p class="note">⚠ Placeholder values for layout. Replace with output from <code>eval.py</code>.</p>
+      </div>
+      <div class="card"><h3>By category</h3>
+        <table><thead><tr><th>Category</th><th>Precision</th><th>Recall</th><th>F1</th></tr></thead><tbody id="catRows"></tbody></table>
+        <p class="note">⚠ Placeholder values.</p>
+        <h3 style="margin-top:16px">False alarms on mutual flirting / banter</h3>
+        <div class="stat"><div class="v" style="color:var(--info)">—</div><div class="l">Fill in from eval.py (lower is better)</div></div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const LV = {info:["lv-info","Info"],warn:["lv-warn","Warn"],high:["lv-high","High"],crit:["lv-crit","Critical"]};
+const APP = {wa:"WA",ig:"IG",tg:"TG",sms:"SMS"};
+const chip = l => `<span class="chip ${LV[l][0]}">${LV[l][1]}</span>`;
+
+// ---------- people ----------
+const PEOPLE = [
+  {id:"rahul",name:"Rahul K",color:"#e2622b",risk:.86,level:"high",cat:["Stalking","Evasion","Sexual harassment"],
+   accounts:[["wa","+91 98•••• 4410","Primary",""],["ig","@rahul.k_02","Linked 91%","Appeared 6 h after the block · same phrasing 'reply na 🥺'"],["ig","@r4hul__k","Linked 84%","Similar handle · same night-time pattern"]],
+   reasons:["User said <b>\"please stop messaging me\"</b> on 12 Oct, then 23 messages since","3 accounts on 2 apps, 2 created after blocks","62% of messages sent between 00:00 and 05:00","Longest unanswered streak: 31 messages","Monitoring: \"saw you outside college\""],
+   consent:[["Neutral",20,"#9aa1b5"],["Unreciprocated",25,"#c98a00"],["Rejected",10,"#e2622b"],["Violation",45,"#d6264f"]],
+   feats:[["Messages / day","14.2"],["Active days","11 of 12"],["Reply ratio (you / them)","0.04"],["Messages after \"no\"","23"],["Toxicity trend","↑ rising"]]},
+  {id:"unk",name:"Unknown (IG)",color:"#d6264f",risk:.97,level:"crit",cat:["Sextortion","AI deepfake"],
+   accounts:[["ig","@priv_x_771","Message request",""]],
+   reasons:["Money demand plus threat to share an image","The attached image is <b>likely manipulated (88%)</b> and matches your face","New account, no prior contact"],
+   consent:[["Neutral",10,"#9aa1b5"],["Violation",90,"#d6264f"]],
+   feats:[["Messages / day","6"],["Media flagged","1 image"],["Hard rule","Sextortion → Critical"]]},
+  {id:"grp",name:"CSE-B Class Group",color:"#c98a00",risk:.58,level:"warn",cat:["Bullying"],
+   accounts:[["wa","CSE-B 2nd year","Group",""]],
+   reasons:["4 members piling on with insults","Body-shaming slang detected: \"chapri\", \"moti\""],
+   consent:[["Neutral",60,"#9aa1b5"],["Unreciprocated",40,"#c98a00"]],
+   feats:[["Toxic messages","9 / 40"],["Distinct senders","4"]]},
+  {id:"arjun",name:"Arjun",color:"#2f9e6e",risk:.12,level:"info",cat:["Mutual flirting"],
+   accounts:[["wa","Arjun ❤️","Known contact",""]],
+   reasons:["Flirting is <b>mutual</b>: you reply warmly and start conversations 48% of the time","No rejection signals, so no alert"],
+   consent:[["Mutual",100,"#2f9e6e"]],
+   feats:[["Reply ratio (you / them)","1.1"],["You start conversations","48%"]]},
+  {id:"aman",name:"Aman (friend)",color:"#2f9e6e",risk:.08,level:"info",cat:["Banter"],
+   accounts:[["wa","Aman","Known contact",""]],
+   reasons:["Mutual swearing between friends (\"abe saale 😂\"), so it counts as banter"],
+   consent:[["Mutual",100,"#2f9e6e"]],
+   feats:[["Reply ratio","0.9"],["Playful replies","87%"]]},
+];
+
+// ---------- scripted demo feed (notification format) ----------
+const FEED = [
+  {app:"wa",from:"Aman",p:"aman",t:"abe saale kal ka match dekha? 😂",lv:null},
+  {app:"wa",from:"Rahul K",p:"rahul",t:"hi",lv:null},
+  {app:"wa",from:"Rahul K",p:"rahul",t:"reply na 🥺",lv:null},
+  {app:"wa",from:"Arjun ❤️",p:"arjun",t:"you looked really cute today 😊",lv:null,note:"Mutual: no alert"},
+  {app:"wa",from:"Rahul K",p:"rahul",t:"why are you online but not replying",lv:"warn",cat:"Surveillance"},
+  {app:"wa",from:"CSE-B 2nd year",p:"grp",t:"Rohit: dekh iski shakal 😂 full chapri",lv:"warn",cat:"Bullying"},
+  {app:"ig",from:"@rahul.k_02",p:"rahul",t:"you blocked me? 🙂 new account, you can't escape",lv:"high",cat:"Evasion",alert:"Rahul K is back on a 2nd Instagram account (91% match). He's continued after your \"no\" on 12 Oct."},
+  {app:"ig",from:"@rahul.k_02",p:"rahul",t:"saw you outside college today with that guy",lv:"high",cat:"Surveillance"},
+  {app:"wa",from:"WhatsApp",p:null,t:"New message",lv:null,note:"Preview hidden: scored on metadata only"},
+  {app:"ig",from:"@priv_x_771",p:"unk",t:"wants to send you a message",lv:"warn",cat:"New unknown account"},
+  {app:"ig",from:"@priv_x_771",p:"unk",t:"📷 Photo",lv:"crit",cat:"AI deepfake",alert:"Image from an unknown account is likely manipulated (88%) and matches your face."},
+  {app:"ig",from:"@priv_x_771",p:"unk",t:"10k bhej warna ye photo sabko bhej dunga",lv:"crit",cat:"Sextortion",alert:"SEXTORTION: don't pay or reply. Evidence pack ready · Call 1930."},
+];
+
+let idx=0, timer=null, stats={m:0,f:0,c:0,p:new Set()}, alertsN=0;
+function renderNotif(n){
+  const el=document.createElement("div");
+  el.className="notif"+(n.lv&&n.lv!=="info"?" flag-"+n.lv:"");
+  const now=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  el.innerHTML=`<div class="appic ${n.app}">${APP[n.app]}</div><div style="flex:1;min-width:0">
+    <div class="who">${n.from} <span class="meta">· ${now}</span></div><div class="txt">${n.t}</div>
+    ${n.lv?chip(n.lv)+` <span class="tag">${n.cat}</span>`:`<span class="meta">${n.note||"✓ Clean, stays on device"}</span>`}</div>`;
+  const ph=$("#phone"); if(ph.querySelector(".empty")) ph.innerHTML=""; ph.prepend(el);
+}
+function pushAlert(n){
+  const box=$("#alerts"); if(box.querySelector(".empty")) box.innerHTML="";
+  const a=document.createElement("div"); a.className="alert "+(n.lv==="crit"?"crit":"high");
+  a.innerHTML=`${chip(n.lv)} <b style="display:inline">${n.cat}</b><div style="margin:4px 0">${n.alert}</div><small>${n.from}</small>
+   <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-person="${n.p}">View person</button>${n.lv==="crit"?'<button class="btn danger" data-goto="evidence">Evidence & report</button>':""}</div>`;
+  box.prepend(a);
+  alertsN++; const c=$("#alertCount"); c.textContent=alertsN; c.style.display="inline-block";
+  if(n.lv==="crit") toast(`🔴 ${n.cat}`, n.alert);
+}
+function step(){
+  if(idx>=FEED.length){stop();return}
+  const n=FEED[idx++]; renderNotif(n);
+  stats.m++; if(n.p) stats.p.add(n.p); if(n.lv&&n.lv!=="info") stats.f++; if(n.lv==="crit") stats.c++;
+  $("#sMsgs").textContent=stats.m; $("#sPeople").textContent=stats.p.size; $("#sFlag").textContent=stats.f; $("#sCrit").textContent=stats.c;
+  if(n.alert) pushAlert(n);
+}
+function stop(){clearInterval(timer);timer=null;$("#simBtn").textContent=idx>=FEED.length?"✓ Done":"▶ Resume"}
+$("#simBtn").onclick=()=>{ if(timer){stop();return} if(idx>=FEED.length) return; $("#simBtn").textContent="⏸ Pause"; step(); timer=setInterval(step,1600); };
+$("#resetBtn").onclick=()=>{stop();idx=0;stats={m:0,f:0,c:0,p:new Set()};alertsN=0;
+  ["#sMsgs","#sPeople","#sFlag","#sCrit"].forEach(s=>$(s).textContent=0);$("#alertCount").style.display="none";
+  $("#phone").innerHTML='<div class="empty">Press <b>Start simulation</b> to stream a scripted demo chat in the notification format.</div>';
+  $("#alerts").innerHTML='<div class="empty">No alerts yet</div>';$("#simBtn").textContent="▶ Start simulation";};
+
+function toast(t,m){const x=$("#toast");x.innerHTML=`<b>${t}</b>${m}`;x.style.display="block";clearTimeout(x._t);x._t=setTimeout(()=>x.style.display="none",4500)}
+
+// ---------- people view ----------
+let selPerson="rahul";
+function renderPeople(){
+  const lvColor={info:"var(--info)",warn:"var(--warn)",high:"var(--high)",crit:"var(--crit)"};
+  $("#personList").innerHTML=[...PEOPLE].sort((a,b)=>b.risk-a.risk).map(p=>`
+   <div class="person ${p.id===selPerson?"sel":""}" data-pid="${p.id}">
+     <div class="avatar" style="background:${p.color}">${p.name[0]}</div>
+     <div><b>${p.name}</b> <span class="meta" style="color:var(--muted);font-size:12px">· ${p.accounts.length} account${p.accounts.length>1?"s":""}</span>
+       <div>${p.cat.map(c=>`<span class="tag">${c}</span>`).join("")}</div>
+       <div class="bar"><i style="width:${p.risk*100}%;background:${lvColor[p.level]}"></i></div></div>
+     <div style="text-align:right">${chip(p.level)}<div style="font-weight:700;margin-top:4px">${Math.round(p.risk*100)}</div></div>
+   </div>`).join("");
+  const p=PEOPLE.find(x=>x.id===selPerson);
+  $("#personDetail").innerHTML=`
+   <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="avatar" style="background:${p.color}">${p.name[0]}</div>
+     <div><h3 style="margin:0">${p.name}</h3>${chip(p.level)} <span style="color:var(--muted)">Risk ${Math.round(p.risk*100)}/100</span></div></div>
+   <h3>Linked accounts</h3>${p.accounts.map(a=>`<div class="acct"><div class="appic ${a[0]}">${APP[a[0]]}</div><div style="flex:1"><b>${a[1]}</b><div style="font-size:12px;color:var(--muted)">${a[3]||""}</div></div><span class="tag">${a[2]}</span></div>`).join("")}
+   ${p.accounts.length>1?'<div style="margin:8px 0 14px;display:flex;gap:6px"><button class="btn">✓ Confirm link</button><button class="btn">✗ Not the same person</button></div>':'<div style="height:12px"></div>'}
+   <h3>Consent timeline</h3><div class="consent">${p.consent.map(c=>`<div style="flex:${c[1]};background:${c[2]}">${c[0]}</div>`).join("")}</div>
+   <h3 style="margin-top:14px">Why we flagged this</h3><ul class="reasons" style="padding-left:18px;margin:0 0 12px">${p.reasons.map(r=>`<li>${r}</li>`).join("")}</ul>
+   <h3>Behaviour features</h3>${p.feats.map(f=>`<div class="featrow"><span style="color:var(--muted)">${f[0]}</span><b>${f[1]}</b></div>`).join("")}
+   <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn primary" data-goto="evidence" data-ev="${p.id}">Build evidence pack</button><button class="btn">Not harassment</button><button class="btn">Alert trusted contact</button></div>`;
+}
+document.addEventListener("click",e=>{
+  const pe=e.target.closest("[data-pid]"); if(pe){selPerson=pe.dataset.pid;renderPeople();}
+  const vp=e.target.closest("[data-person]"); if(vp&&vp.dataset.person!=="null"){selPerson=vp.dataset.person;go("people");}
+  const g=e.target.closest("[data-goto]"); if(g){ if(g.dataset.ev) $("#evPerson").value=g.dataset.ev; else if(g.dataset.goto==="evidence") $("#evPerson").value="unk"; go(g.dataset.goto); renderEvidence(); }
+  const nb=e.target.closest(".nav-btn[data-view]"); if(nb) go(nb.dataset.view);
+});
+
+// ---------- navigation ----------
+function go(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.toggle("active",s.id===v));
+  document.querySelectorAll(".nav-btn[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===v));
+  if(v==="people") renderPeople(); if(v==="metrics") renderMetrics(); if(v==="evidence") renderEvidence();
+  window.scrollTo(0,0);
+}
+$("#mtabs").innerHTML=[...document.querySelectorAll("nav .nav-btn")].map(b=>`<button class="nav-btn ${b.classList.contains("active")?"active":""}" data-view="${b.dataset.view}">${b.childNodes[0].textContent.trim()}</button>`).join("");
+
+// ---------- media check ----------
+const STEPS=[["Nudity / explicit check","Explicit · 0.93",true],["Face match vs your enrolled selfie","Match · 0.81",true],["Deepfake detector (your model)","Likely manipulated · 0.88",true],["Context: text sent with it","Sextortion intent",true]];
+function renderSteps(state){ $("#steps").innerHTML=STEPS.map((s,i)=>{const st=state[i]||"";return `<div class="step ${st}"><div class="st">${st==="ok"?"!":st==="pass"?"✓":""}</div><div>${s[0]}</div><div class="r" style="color:${st==="ok"?"var(--crit)":"var(--muted)"}">${st==="ok"?s[1]:st==="run"?"analysing…":"waiting"}</div></div>`}).join(""); }
+renderSteps([]);
+$("#file").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const url=URL.createObjectURL(f);
+  $("#prevWrap").innerHTML=f.type.startsWith("image")?`<img class="preview" src="${url}" alt="uploaded media (blurred)">`:`<div style="margin-top:10px"><b>${f.name}</b></div>`;
+  $("#verdict").style.display="none";
+  const state=[]; let i=0;
+  (function next(){ if(i>0) state[i-1]="ok"; if(i>=STEPS.length){renderSteps(state);$("#verdict").style.display="block";return}
+    state[i]="run"; renderSteps(state); i++; setTimeout(next,900); })();
+};
+
+// ---------- evidence ----------
+$("#evPerson").innerHTML=PEOPLE.filter(p=>p.level!=="info").map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
+const LAWS={rahul:[["BNS 78","Stalking"],["BNS 75","Sexual harassment"],["BNS 351","Criminal intimidation"],["IT Act 66C/66D","Impersonation / fake accounts"]],
+  unk:[["BNS 308","Extortion"],["IT Act 66E","Violation of privacy (images)"],["IT Act 67 / 67A","Obscene / sexually explicit content"],["BNS 351","Criminal intimidation"]],
+  grp:[["BNS 79","Insulting the modesty of a woman"],["BNS 356","Defamation"]]};
+let lastPack=null;
+function evItems(pid){ return FEED.filter(n=>n.p===pid&&n.lv).map((n,i)=>({time:new Date(Date.now()-(10-i)*3600e3).toISOString(),app:APP[n.app],account:n.from,message:n.t,category:n.cat,level:n.lv})); }
+function renderEvidence(){
+  const pid=$("#evPerson").value, p=PEOPLE.find(x=>x.id===pid), items=evItems(pid);
+  $("#evTitle").textContent=`Flagged items: ${p.name}`;
+  $("#evRows").innerHTML=items.map(it=>`<tr><td>${new Date(it.time).toLocaleString()}</td><td>${it.app} · ${it.account}</td><td>${it.message}</td><td>${chip(it.level)} ${it.category}</td><td class="hash" data-h>press Generate</td></tr>`).join("")||'<tr><td colspan="5" class="empty">No flagged items</td></tr>';
+  $("#packHash").textContent=""; $("#dlBtn").disabled=true;
+  $("#laws").innerHTML=(LAWS[pid]||[]).map(l=>`<div class="featrow"><b>${l[0]}</b><span style="color:var(--muted)">${l[1]}</span></div>`).join("");
+  $("#complaint").textContent=`To: Grievance Officer / Cyber Cell\n\nI am being harassed by ${p.name} (${p.accounts.map(a=>a[1]).join(", ")}).\nCategories: ${p.cat.join(", ")}.\n\nSummary:\n- ${p.reasons.map(r=>r.replace(/<[^>]+>/g,"")).join("\n- ")}\n\nThe attached evidence pack has ${items.length} items, each with a SHA-256 fingerprint.\nUnder the IT Rules 2026, non-consensual intimate imagery must be removed within 2 hours and other unlawful content within 3 hours. I request immediate removal and action.`;
+}
+// WebCrypto needs a secure context (https/localhost); fall back to a pure-JS SHA-256 otherwise
+function sha256js(str){
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const b=new TextEncoder().encode(str), l=b.length, n=((l+9+63)>>6)<<6, m=new Uint8Array(n);
+  m.set(b); m[l]=0x80; const dv=new DataView(m.buffer); dv.setUint32(n-4,l*8); dv.setUint32(n-8,Math.floor(l/2**29));
+  let h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const r=(x,y)=>(x>>>y)|(x<<(32-y)), w=new Uint32Array(64);
+  for(let o=0;o<n;o+=64){
+    for(let i=0;i<16;i++) w[i]=dv.getUint32(o+i*4);
+    for(let i=16;i<64;i++){const s0=r(w[i-15],7)^r(w[i-15],18)^(w[i-15]>>>3),s1=r(w[i-2],17)^r(w[i-2],19)^(w[i-2]>>>10);w[i]=(w[i-16]+s0+w[i-7]+s1)|0;}
+    let [a,bb,c,d,e,f,g,hh]=h;
+    for(let i=0;i<64;i++){const t1=(hh+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]+w[i])|0,t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&c)^(bb&c)))|0;hh=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;}
+    h=h.map((x,i)=>(x+[a,bb,c,d,e,f,g,hh][i])|0);
+  }
+  return h.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
+}
+async function sha(s){
+  if(!window.crypto?.subtle) return sha256js(s);
+  const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+$("#evPerson").onchange=renderEvidence;
+$("#genBtn").onclick=async()=>{
+  const pid=$("#evPerson").value, items=evItems(pid), cells=document.querySelectorAll("[data-h]");
+  for(let i=0;i<items.length;i++){ items[i].sha256=await sha(JSON.stringify(items[i])); if(cells[i]) cells[i].textContent=items[i].sha256; }
+  const pack={generated_at:new Date().toISOString(),person:PEOPLE.find(p=>p.id===pid).name,items,legal:LAWS[pid]||[]};
+  pack.pack_sha256=await sha(JSON.stringify(items));
+  $("#packHash").innerHTML=`Pack fingerprint: <span class="hash">${pack.pack_sha256}</span>`;
+  lastPack=pack; $("#dlBtn").disabled=false; toast("✓ Evidence pack generated", `${items.length} items fingerprinted`);
+};
+$("#dlBtn").onclick=()=>{ if(!lastPack) return; const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(lastPack,null,2)],{type:"application/json"})); a.download="safesphere_evidence.json"; a.click(); };
+
+// ---------- metrics (placeholder values) ----------
+function renderMetrics(){
+  const M=[["Precision",.62,.88],["Recall",.21,.84],["F1",.31,.86],["Detection rate",.24,.87]];
+  const W=520,H=260,pad=34,gw=(W-pad*2)/M.length,bw=28; let s="";
+  for(let y=0;y<=1;y+=.25){const yy=H-pad-(H-pad*2)*y; s+=`<line x1="${pad}" x2="${W-pad}" y1="${yy}" y2="${yy}" stroke="var(--line)"/><text x="${pad-6}" y="${yy+4}" font-size="10" text-anchor="end" fill="var(--muted)">${y}</text>`;}
+  M.forEach((m,i)=>{const x=pad+gw*i+gw/2;[[m[1],"#9aa1b5",-bw-2],[m[2],"var(--brand)",2]].forEach(([v,c,o])=>{const h=(H-pad*2)*v;
+    s+=`<rect x="${x+o}" y="${H-pad-h}" width="${bw}" height="${h}" rx="4" fill="${c}"/><text x="${x+o+bw/2}" y="${H-pad-h-5}" font-size="10" text-anchor="middle" fill="var(--text)">${v.toFixed(2)}</text>`});
+    s+=`<text x="${x}" y="${H-pad+16}" font-size="11" text-anchor="middle" fill="var(--muted)">${m[0]}</text>`;});
+  $("#chart").innerHTML=s;
+  $("#catRows").innerHTML=[["Stalking",.88,.84],["Bullying (Hinglish)",.85,.80],["Sexual harassment",.83,.79],["Sextortion",.93,.90],["Threats",.90,.86]]
+    .map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${(2*r[1]*r[2]/(r[1]+r[2])).toFixed(2)}</td></tr>`).join("");
+}
+</script>
+</body>
+</html>
