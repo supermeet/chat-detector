@@ -51,6 +51,21 @@ Backend: FastAPI in `backend/`. Base URL in dev: `http://localhost:8000`. Intera
   so a pile-on is scored as one group. The room person is scored only once ≥ 2 members have messaged the user.
   `message_ids` and `labels` stay one per submitted notification. Every person view has `is_room`.
 
+The ingest response also has `new_slang`: words the system just proposed for the word list (see below).
+
+### Word list (adaptive slang)
+| Call | Body / result |
+|---|---|
+| `GET /lexicon` | `{version, terms[{id, term, cat, sev, variants[], src, date}], pending[{id, term, cat, sev, src, note}], log[{t, when}]}` |
+| `POST /lexicon/terms` | `{term, cat, sev, variants?}`: adds and re-scores everyone (variants auto-generated when empty) |
+| `POST /lexicon/pending` | `{term, cat?, sev?, src: User\|AI\|Auto, note?}`: into the review queue |
+| `POST /lexicon/pending/{id}/approve` | optional edits `{term?, cat?, sev?, variants?}` · `.../reject` (never proposed again) |
+| `POST /lexicon/test` | `{text}` → `{normalised, tokens[{w, hit}], matches[], label}` (label = model + word list) |
+| `POST /lexicon/suggest` | `{term}` → `{variants[], source: rules\|gemini+rules}` (Gemini sees only the term) |
+
+`cat` is one of: Refusal signal, Bullying, Sextortion, Extortion, Stalking, Threat, Sexual harassment,
+Self-harm incitement. `POST /feedback` with `kind: missed_harassment` and a `note` also adds the note to the queue.
+
 ### Simulated chatroom (extension demo)
 `GET /demo/rooms` lists room scripts; `GET /demo/rooms/{name}` returns `{title, room, self, members, events[]}` with
 scenario-clock `timestamp`s. `GET /chatroom/` serves the page that plays them. See `extension/README.md`.

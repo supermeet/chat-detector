@@ -67,6 +67,7 @@ class Lexicon:
     def reset(self):
         with self.lock:
             self.added, self.pending, self.log = [], [], []
+            self.rejected = set()   # skeletons a person rejected: never proposed again
             self._ids = itertools.count(1)
             self._mtime, self._seed, self._index = None, [], None
             self.version = 0
@@ -101,7 +102,7 @@ class Lexicon:
     def terms(self):
         with self.lock:
             self._reload_if_changed()
-            return self._seed + self.added
+            return self.added + self._seed   # newest first
 
     def add_term(self, term, cat, sev, variants=(), src="User", log_as=None):
         with self.lock:
@@ -125,6 +126,7 @@ class Lexicon:
                 return None
             self.pending.remove(p)
             if not approve:
+                self.rejected.add(skeleton(p["term"]))
                 self.log.insert(0, dict(t=f'Rejected "{p["term"]}"', when=_today()))
                 return p
             e = edits or {}

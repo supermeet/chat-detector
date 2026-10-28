@@ -168,3 +168,11 @@ def test_room_wording_says_members_not_accounts():
     assert "4 members" in alert["summary"] and "accounts" not in alert["summary"], alert["summary"]
     assert not any("accounts" in x for x in alert["reasons"]), alert["reasons"]
     assert any("4 members of the room" in x for x in alert["reasons"]), alert["reasons"]
+
+
+def test_pile_on_teaches_new_slang():
+    from app import lexicon
+    lexicon.lex.reset()
+    play("pile_on")
+    assert any(p["term"] == "behenji" and p["src"] == "Auto" for p in lexicon.lex.pending), lexicon.lex.pending
+    lexicon.lex.reset()
