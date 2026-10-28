@@ -72,7 +72,8 @@ class Component extends DCLogic {
     const p = Object.assign({}, base, {
       id: v.id, name, initials, live: true, level,
       rel: (v.relationship || 'stranger').replace(/^./, (c) => c.toUpperCase()),
-      risk: Math.round((v.risk || 0) * 100), safe: !!v.trusted, nMsgs: v.n_messages || 0, label: v.label,
+      // while "early" (too little history) the level is capped at warn, so the shown score is too, to stay consistent
+      risk: Math.round((v.early && level !== 'critical' ? Math.min(v.risk || 0, 0.54) : (v.risk || 0)) * 100), safe: !!v.trusted, nMsgs: v.n_messages || 0, label: v.label,
       early: !!v.early,
       tags: (v.early ? ['Early: watching'] : [L[v.label] || 'New']).concat((v.accounts || []).length > 1 ? ['Multiple accounts'] : []).concat(v.trusted ? ['Marked safe'] : []),
       tagline: v.early ? 'Too few messages to judge a pattern yet' + ((v.reasons || [])[0] ? ': ' + v.reasons[0].toLowerCase() : '') : ((v.reasons || [])[0] || (L[v.label] ? L[v.label] + ' pattern' : 'Not enough messages yet')),
@@ -100,7 +101,7 @@ class Component extends DCLogic {
         p.timeline = tl.map((ph, i) => {
           const s = new Date(ph.start).getTime(), e = i + 1 < tl.length ? new Date(tl[i + 1].start).getTime() : tEnd;
           const extra = ph.messages_after_no ? ' · ' + ph.messages_after_no + ' messages after you said no' : '';
-          return { phase: PH[ph.phase] || 'Neutral', w: Math.max(8, Math.round(((e - s) / Math.max(1, tEnd - t0)) * 100)), date: this.fmtDate(ph.start), tip: this.fmtTime(ph.start) + ': ' + (PH[ph.phase] || ph.phase) + extra };
+          return { phase: PH[ph.phase] || 'Neutral', w: Math.max(22, Math.round(((e - s) / Math.max(1, tEnd - t0)) * 100)), date: this.fmtDate(ph.start), tip: this.fmtTime(ph.start) + ': ' + (PH[ph.phase] || ph.phase) + extra };
         });
       }
     }
@@ -284,8 +285,27 @@ class Component extends DCLogic {
     const firsts = { vikram: ['cyber', 'e112'], tg: ['h1930', 'ncii'], rahul: ['cyber'], arjun: ['gro'] };
     const suggest = { vikram: 'He ignored 3 clear refusals and threatened you: file on cybercrime.gov.in and tell your hostel warden. If he turns up outside, call 112.', tg: 'Sextortion: call 1930 and hash the image on StopNCII first. Then file on cybercrime.gov.in.', rahul: 'Stalking with a threat: file on cybercrime.gov.in. If you feel unsafe right now, call 112.', arjun: 'Bullying in a group: report to the platform and your school first.' };
     const T = {
-      en: { home: 'Home', feed: 'Live Feed', people: 'People', media: 'Media Check', import: 'Import Chat', evidence: 'Evidence & Report', metrics: 'Metrics', slang: 'Slang List', settings: 'Settings', help: 'Get Help Now', exit: 'Quick Exit', ondevice: 'Processed on device' },
-      hi: { home: 'होम', feed: 'लाइव फ़ीड', people: 'लोग', media: 'मीडिया जाँच', import: 'चैट आयात', evidence: 'सबूत और रिपोर्ट', metrics: 'मेट्रिक्स', slang: 'स्लैंग सूची', settings: 'सेटिंग्स', help: 'अभी मदद पाएँ', exit: 'तुरंत बाहर', ondevice: 'डिवाइस पर प्रोसेस' }
+      en: { home: 'Overview', feed: 'Messages', people: 'People', media: 'Check a photo', import: 'Import a chat', evidence: 'Evidence & report', metrics: 'Model results', slang: 'Word list', settings: 'Settings', help: 'Get help now', exit: 'Quick exit', ondevice: 'Processed on device' },
+      hi: { home: 'सारांश', feed: 'संदेश', people: 'लोग', media: 'फ़ोटो जाँचें', import: 'चैट आयात करें', evidence: 'सबूत और रिपोर्ट', metrics: 'मॉडल परिणाम', slang: 'शब्द सूची', settings: 'सेटिंग्स', help: 'अभी मदद पाएँ', exit: 'तुरंत बाहर', ondevice: 'डिवाइस पर प्रोसेस' }
+    };
+    /* one plain sentence under each page title, so nobody has to guess what a screen is for */
+    const SUB = {
+      en: {
+        home: 'Your safety at a glance: who needs attention and what happened recently.',
+        feed: 'New messages are checked as they arrive. Anything worrying is flagged with the reason.',
+        people: 'Everyone who messages you, ranked by risk. Several accounts can belong to one person.',
+        media: 'Worried a photo, video or voice note is fake or explicit? Check it here. It stays blurred.',
+        import: 'Add an old chat so its full history, including your replies, is taken into account.',
+        evidence: 'A tamper-proof record of what happened, plus where and how to report it.',
+        metrics: 'How accurate the detection model is on test data.',
+        slang: 'Words and phrases the system looks for, including new slang you add.',
+        settings: 'Connection, privacy, alerts, language and theme.'
+      },
+      hi: {
+        home: 'आपकी सुरक्षा एक नज़र में।', feed: 'नए संदेश आते ही जाँचे जाते हैं।', people: 'आपको संदेश भेजने वाले सभी लोग, जोखिम के क्रम में।',
+        media: 'कोई फ़ोटो, वीडियो या वॉइस नोट नकली या अश्लील लगे तो यहाँ जाँचें।', import: 'पुरानी चैट जोड़ें ताकि पूरा इतिहास गिना जाए।',
+        evidence: 'जो हुआ उसका सुरक्षित रिकॉर्ड, और रिपोर्ट कहाँ करें।', metrics: 'मॉडल कितना सटीक है।', slang: 'जिन शब्दों को सिस्टम पहचानता है।', settings: 'कनेक्शन, गोपनीयता, भाषा और थीम।'
+      }
     };
     const terms = [
       { term: 'please stop', cat: 'Refusal signal', sev: 'info', variants: 'pls stop, stop it, leave me alone', src: 'Seed', date: '1 Oct' },
@@ -306,7 +326,7 @@ class Component extends DCLogic {
       { term: 'v1ral kr dunga', cat: 'Sextortion', sev: 'critical', src: 'AI', note: 'Leetspeak variant of "viral kar dunga".' },
       { term: 'snitch', cat: 'Bullying', sev: 'warn', src: 'User', note: 'Flagged by you from a missed message.' }
     ];
-    return { SEV, PHASE, APPN, people, script, evidence, laws, CH, chOrder, firsts, suggest, T, terms, pending };
+    return { SEV, PHASE, APPN, people, script, evidence, laws, CH, chOrder, firsts, suggest, T, SUB, terms, pending };
   }
 
   initialState() {
@@ -315,7 +335,7 @@ class Component extends DCLogic {
     return {
       live: false, conn: { status: 'checking', base: '', model: '', deepfake: '', error: '' },
       linkSugg: [], evLive: {}, details: {}, busy: false,
-      screen: 'feed', theme: 'light', lang: 'en', exit: false, bell: false, protection: true,
+      screen: 'home', theme: 'light', lang: 'en', exit: false, bell: false, protection: true,
       running: false, idx: 0, feed: [], alerts: [], unread: 0, speed: 1, scenario: 'refusal',
       fFlag: false, fApp: '', fLevel: '', fq: '',
       people, sel: 'vikram', pFilter: 'all', pq: '',
@@ -373,6 +393,13 @@ class Component extends DCLogic {
   scriptFor() { return this.D.script.filter((m) => m.scen.indexOf(this.state.scenario) >= 0); }
   startFeed() {
     if (this.feedTimer) clearInterval(this.feedTimer);
+    if (this.state.live && this.state.idx === 0 && !this.state.feed.length) {
+      // a fresh demo run starts from a clean slate, so earlier runs can't leak into this one
+      this.lastSender = {};
+      this.setState({ running: true, people: {}, sel: null, alerts: [], linkSugg: [], evLive: {} });
+      SSApi.del('/data').then(() => { this.feedTimer = setInterval(() => this.tick(), 1700 / this.state.speed); }, (e) => { this.setState({ running: false }); this.liveFail(e, 'Could not start the demo'); });
+      return;
+    }
     this.setState({ running: true });
     this.feedTimer = setInterval(() => this.tick(), 1700 / this.state.speed);
   }
@@ -1320,7 +1347,7 @@ class Component extends DCLogic {
       harassment_after_no: PP.name + ' kept messaging you after you said no. You did the right thing by saying no.',
       stalking: PP.name + ' is contacting you obsessively and may be tracking where you are.',
       group_bullying: 'You are being targeted in a group chat.' };
-    const what = (S.live ? (LIVEWHAT[PP.label] || (PP.reasons[0] ? PP.reasons[0].pre : '')) : { vikram: 'Vikram S ignored your "no" three times and is threatening to share your photos. You did the right thing by saying no.', tg: 'Someone sent a manipulated intimate image of you with a money demand.', rahul: 'Rahul K is following you and has threatened to come to your home.', arjun: 'You are being insulted in a group chat.' }[PP.id]) || 'Here is what to do right now.';
+    const what = (S.live ? (LIVEWHAT[PP.label] || (PP.name + ' is contacting you in a way that looks harmful. Here is what to do right now.')) : { vikram: 'Vikram S ignored your "no" three times and is threatening to share your photos. You did the right thing by saying no.', tg: 'Someone sent a manipulated intimate image of you with a money demand.', rahul: 'Rahul K is following you and has threatened to come to your home.', arjun: 'You are being insulted in a group chat.' }[PP.id]) || 'Here is what to do right now.';
     const C = S.checks;
     const cks = [['ev', 'Evidence saved (done automatically)'], ['ncii', 'Hash the image on StopNCII'], ['call', 'Call 1930'], ['report', 'Report on cybercrime.gov.in'], ['tell', 'Tell someone you trust']];
     const panic = {
@@ -1342,7 +1369,7 @@ class Component extends DCLogic {
         : S.conn.status === 'checking'
           ? { label: 'Connecting…', title: 'Looking for the backend at ' + SSApi.base(), style: 'background: var(--surface2); color: var(--muted); border: 0', click: () => {} }
           : { label: 'Demo mode · backend offline', title: 'Showing sample data. ' + (S.conn.error || '') + ' Click to retry.', style: 'background: var(--warn-bg); color: var(--warn-ink); border: 0; cursor: pointer', click: () => this.connect() },
-      themeClass: S.theme === 'dark' ? 'dark' : '', t: T, exitMode: S.exit, appMode: !S.exit,
+      themeClass: S.theme === 'dark' ? 'dark' : '', t: T, sub: D.SUB[S.lang], exitMode: S.exit, appMode: !S.exit,
       forecast: [{ d: 'Thu', s: 'Light rain', t: '28° / 24°' }, { d: 'Fri', s: 'Cloudy', t: '29° / 24°' }, { d: 'Sat', s: 'Sunny', t: '31° / 25°' }, { d: 'Sun', s: 'Sunny', t: '31° / 25°' }, { d: 'Mon', s: 'Partly cloudy', t: '30° / 24°' }],
       quickExit: () => { this.pauseFeed(); this.setState({ exit: true, panic: false, dlg: null, toast: null, bell: false }); },
       leaveExit: () => this.setState({ exit: false }),

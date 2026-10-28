@@ -54,7 +54,7 @@ def _person(pid):
 @app.get("/", include_in_schema=False)
 def ui():
     if settings.FRONTEND_PATH.exists():
-        return FileResponse(settings.FRONTEND_PATH, media_type="text/html")
+        return FileResponse(settings.FRONTEND_PATH, media_type="text/html", headers={"Cache-Control": "no-cache"})
     return HTMLResponse("<h1>SafeSphere API</h1><p>UI not built: run <code>python frontend/build.py</code>. "
                         "API docs at <a href='/docs'>/docs</a>.</p>")
 
