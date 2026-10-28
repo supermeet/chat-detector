@@ -4,7 +4,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-App = Literal["wa", "ig", "tg", "sms", "snap", "fb"]
+App = Literal["wa", "ig", "tg", "sms", "snap", "fb", "web"]
 Relationship = Literal["stranger", "acquaintance", "friend", "partner", "family"]
 
 
@@ -19,6 +19,8 @@ class Notification(BaseModel):
     media_type: Optional[Literal["image", "video", "audio"]] = None
     chat: Optional[str] = Field(None, description="Group name for group chats")
     is_group: bool = False
+    room: Optional[str] = Field(
+        None, description="Live chatroom name: the message is also scored as part of the room's group person")
     relationship: Optional[Relationship] = Field(
         None, description="If known (e.g. sender is a saved contact): sets the person's relationship once")
 

@@ -80,7 +80,25 @@ def _add_message(n: Notification, source="notification"):
         person.is_group = True
     if n.relationship and person.relationship == "stranger":
         person.relationship = n.relationship
+    if n.room:
+        _add_room_copy(n, handle, ts, source)
     return mid, acc
+
+
+def _add_room_copy(n: Notification, handle, ts, source):
+    """Store the message again under the room's group person (one account per member), so a pile-on by several
+    members is scored as one group, like a group chat import, while each member is still scored on their own."""
+    racc = store.get_or_create_account(n.app, f"{n.room}/{handle}", n.sender, ts)
+    room_pid = store.rooms.get(n.room)
+    if room_pid is None:   # first message in this room: the new account's person becomes the room person
+        room = store.persons[racc.person_id]
+        room.display_name, room.is_group, room.is_room, room.relationship = n.room, True, True, "acquaintance"
+        store.rooms[n.room] = room.id
+    elif racc.person_id != room_pid:
+        store.link(room_pid, racc.id)
+    mid = next(store._msg_ids)
+    store.messages[mid] = Message(mid, racc.id, n.app, ts, n.is_user, n.text, n.event, n.media_type,
+                                  n.room, True, source)
 
 
 @app.post("/ingest/notification", dependencies=[Depends(require_key)])
@@ -92,6 +110,8 @@ def ingest(body: Union[Notification, list[Notification]]):
             mid, acc = _add_message(n)
             ids.append(mid)
             touched[acc.person_id] = acc.id
+            if n.room:
+                touched[store.rooms[n.room]] = None
         alerts_before = set(store.alerts)
         people = []
         for pid in touched:

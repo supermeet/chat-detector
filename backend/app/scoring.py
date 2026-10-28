@@ -79,6 +79,9 @@ def score_person(person_id):
     if df.empty or not (~df["is_user"]).any():
         person.result = None
         return None
+    if person.is_room and df.loc[~df["is_user"], "account_id"].nunique() < 2:
+        person.result = None   # one member alone is already scored as their own person; no duplicate alert
+        return None
     res = scorer().score_person(df)
     if person.trusted and res["level"] != "critical":
         res["level"] = "info"
@@ -111,6 +114,7 @@ def person_view(person, detail=False):
     reasons = res.get("reasons", []) if level != "info" else []
     out = dict(id=person.id, display_name=person.display_name, accounts=accounts,
                relationship=person.relationship, trusted=person.trusted, is_group=person.is_group,
+               is_room=person.is_room,
                risk=res.get("risk"), level=level, label=res.get("label"), early=bool(res.get("early", False)),
                reasons=reasons, n_messages=res.get("n_messages", 0))
     if detail:
