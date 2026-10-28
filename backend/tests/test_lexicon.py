@@ -124,3 +124,71 @@ def test_seed_file_hot_reload(tmp_path, monkeypatch):
     later = time.time() + 5
     os.utime(seed, (later, later))
     assert [m["term"] for m in lexicon.lex.match("betaword alpha")] == ["betaword"]
+
+
+# ---------------------------------------------------------------- automatic discovery: behaviour teaches vocabulary
+def _room(sender, text, minute, day=27, room="Class 12-B", user=False):
+    return dict(app="web", sender=sender.title(), sender_handle=sender, text=text, is_user=user, room=room,
+                relationship="acquaintance", timestamp=f"2026-10-{day}T19:{minute:02d}:00")
+
+
+BULLIES = [
+    _room("rohan", "full chapri hai tu", 0), _room("sneha", "behenji kahin ki", 1), _room("kabir", "nobody likes you", 2),
+    _room("rohan", "loser behenji", 3), _room("rohan", "please stop", 5, user=True), _room("sneha", "moti kahin ki", 6),
+    _room("kabir", "everyone laughs at you", 7), _room("ishaan", "go cry somewhere", 8),
+    _room("rohan", "tu kisi kaam ki nahi", 9), _room("sneha", "kitni dumb hai tu", 0, day=28),
+    _room("ishaan", "useless", 2, day=28), _room("kabir", "cheap lagti hai", 3, day=28),
+    _room("kabir", "leave me alone", 5, day=28, user=True), _room("rohan", "kaali kalooti", 6, day=28),
+]
+
+
+def _pending_terms():
+    return {p["term"]: p for p in client.get("/lexicon").json()["pending"]}
+
+
+def test_discovery_suggests_new_word_from_flagged_chats():
+    r = client.post("/ingest/notification", json=BULLIES).json()
+    assert any(p["is_room"] and p["level"] in ("high", "critical") for p in r["people"])
+    p = _pending_terms().get("behenji")
+    assert p is not None, _pending_terms()
+    assert p["src"] == "Auto" and "2 senders" in p["note"] and "0 safe" in p["note"]
+    assert p["cat"] == "Bullying"
+
+
+def test_discovery_privacy_only_the_term_is_kept():
+    client.post("/ingest/notification", json=BULLIES)
+    p = _pending_terms()["behenji"]
+    assert "kahin" not in str(p) and "loser" not in str(p)
+
+
+def test_discovery_skips_common_known_and_one_sender_words():
+    client.post("/ingest/notification", json=BULLIES)
+    terms = _pending_terms()
+    assert "kahin" not in terms        # one sender only (sneha twice)
+    assert "chapri" not in terms       # already on the list
+    assert not any(len(t) < 4 for t in terms)
+
+
+def test_discovery_ignores_words_also_used_in_safe_chats():
+    safe = [dict(app="wa", sender="Didi", text=t, is_user=u, relationship="family",
+                 timestamp=f"2026-10-2{d}T1{h}:00:00")
+            for d, h, t, u in [(5, 0, "behenji style kurta mast hai", False), (5, 1, "haha thanks", True),
+                               (6, 0, "behenji look aaj", False), (6, 1, "😂 love it", True)]]
+    client.post("/ingest/notification", json=safe)
+    client.post("/ingest/notification", json=BULLIES)
+    assert "behenji" not in _pending_terms()
+
+
+def test_discovery_does_not_resuggest_rejected():
+    client.post("/ingest/notification", json=BULLIES)
+    qid = _pending_terms()["behenji"]["id"]
+    client.post(f"/lexicon/pending/{qid}/reject")
+    client.post("/ingest/notification", json=[_room("ishaan", "behenji", 30, day=28)])
+    assert "behenji" not in _pending_terms()
+
+
+def test_approved_discovery_gets_variants_and_applies():
+    client.post("/ingest/notification", json=BULLIES)
+    t = client.post(f"/lexicon/pending/{_pending_terms()['behenji']['id']}/approve").json()
+    assert "b3h3nji" in t["variants"] or "beh3nji" in t["variants"], t["variants"]
+    assert client.post("/lexicon/test", json={"text": "b3henji"}).json()["label"] == "insult"

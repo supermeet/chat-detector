@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import conclusion, deepfake, importers, lexicon, linking, media, report
+from . import conclusion, deepfake, discovery, importers, lexicon, linking, media, report
 from .config import BACKEND_DIR, settings
 from .schemas import (Feedback, LexEdits, LexPending, LexSuggest, LexTerm, LexText, LinkRequest, MediaPatch,
                       Notification, PersonPatch, UnlinkRequest)
@@ -121,7 +121,8 @@ def ingest(body: Union[Notification, list[Notification]]):
             people.append(person_view(store.persons[pid]))
         new_alerts = [_alert_view(store.alerts[a]) for a in store.alerts if a not in alerts_before]
         labels = _message_labels([store.messages[i] for i in ids])
-    return dict(message_ids=ids, people=people, new_alerts=new_alerts, labels=labels)
+        new_slang = discovery.run()
+    return dict(message_ids=ids, people=people, new_alerts=new_alerts, labels=labels, new_slang=new_slang)
 
 
 def _message_labels(msgs):
@@ -205,6 +206,7 @@ def import_chat(file: UploadFile = File(...), source: str = Form("whatsapp"), us
             if p.relationship == "stranger":
                 p.relationship = relationship
             score_person(pid)
+        discovery.run()
         return dict(imported=len(msgs), people=[person_view(store.persons[p], detail=True) for p in touched])
 
 
