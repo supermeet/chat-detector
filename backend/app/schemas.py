@@ -46,6 +46,41 @@ class MediaPatch(BaseModel):
     person_id: str
 
 
+LexCategory = Literal["Refusal signal", "Bullying", "Sextortion", "Extortion", "Stalking", "Threat",
+                      "Sexual harassment", "Self-harm incitement"]
+Severity = Literal["info", "warn", "high", "critical"]
+
+
+class LexTerm(BaseModel):
+    term: str = Field(..., min_length=1, max_length=60)
+    cat: LexCategory
+    sev: Severity = "warn"
+    variants: list[str] = []
+
+
+class LexPending(BaseModel):
+    term: str = Field(..., min_length=1, max_length=60)
+    cat: LexCategory = "Bullying"
+    sev: Severity = "warn"
+    src: Literal["User", "AI", "Auto"] = "User"
+    note: str = ""
+
+
+class LexEdits(BaseModel):
+    term: Optional[str] = None
+    cat: Optional[LexCategory] = None
+    sev: Optional[Severity] = None
+    variants: list[str] = []
+
+
+class LexText(BaseModel):
+    text: str = Field(..., max_length=2000)
+
+
+class LexSuggest(BaseModel):
+    term: str = Field(..., min_length=1, max_length=60)
+
+
 class Feedback(BaseModel):
     person_id: str
     kind: Literal["not_harassment", "missed_harassment"]
