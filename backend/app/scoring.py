@@ -83,6 +83,10 @@ def score_person(person_id):
         person.result = None   # one member alone is already scored as their own person; no duplicate alert
         return None
     res = scorer().score_person(df)
+    if person.is_group:   # in a group, each account is a different member, not one person's extra account
+        res["reasons"] = [f"{len(person.account_ids)} members of the room are involved"
+                          if r.startswith("Contacted you from ") and r.endswith(" accounts") else r
+                          for r in res["reasons"]]
     if person.trusted and res["level"] != "critical":
         res["level"] = "info"
         res["reasons_down"] = ["You marked this person as not harassment"] + res["reasons_down"]
@@ -100,7 +104,7 @@ def score_person(person_id):
 def _summary(person, res):
     nice = res["label"].replace("_", " ")
     accs = len(person.account_ids)
-    extra = f" across {accs} accounts" if accs > 1 else ""
+    extra = (f" by {accs} members" if person.is_group else f" across {accs} accounts") if accs > 1 else ""
     return f"{person.display_name}: likely {nice}{extra} (risk {res['risk']:.2f})"
 
 

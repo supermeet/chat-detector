@@ -70,7 +70,7 @@ def build_pack(person_id):
     view = person_view(person, detail=True)
     if view["label"] in ("stalking", "harassment_after_no"):
         cats.add("stalking")
-    if len(person.account_ids) > 1:
+    if len(person.account_ids) > 1 and not person.is_group:   # a group's accounts are different members
         cats.add("impersonation")
     if person.minor_involved:
         cats.add("minor")

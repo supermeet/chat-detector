@@ -152,3 +152,19 @@ def test_room_sextortion_critical():
 def test_chatroom_page_served():
     r = client.get("/chatroom/")
     assert r.status_code == 200 and 'id="room"' in r.text
+
+
+def test_room_pack_does_not_claim_impersonation():
+    """A room's accounts are different members, not one person's fake accounts: no IT Act 66C/66D."""
+    r = client.post("/ingest/notification", json=PILE_ON).json()
+    room = next(p for p in r["people"] if p["is_room"])
+    sections = [l["section"] for l in client.post(f"/report/{room['id']}").json()["legal"]]
+    assert "IT Act 66C / 66D" not in sections, sections
+
+
+def test_room_wording_says_members_not_accounts():
+    r = client.post("/ingest/notification", json=PILE_ON).json()
+    alert = next(a for a in r["new_alerts"] if a["person_id"] == next(p["id"] for p in r["people"] if p["is_room"]))
+    assert "4 members" in alert["summary"] and "accounts" not in alert["summary"], alert["summary"]
+    assert not any("accounts" in x for x in alert["reasons"]), alert["reasons"]
+    assert any("4 members of the room" in x for x in alert["reasons"]), alert["reasons"]
