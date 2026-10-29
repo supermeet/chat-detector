@@ -1,0 +1,24 @@
+{
+  "_note": "Seed slang list. Edit freely: the backend reloads this file on change, no restart or retraining. cat must be one of app/lexicon.py CATEGORIES, sev one of info|warn|high|critical.",
+  "terms": [
+    {"term": "please stop", "cat": "Refusal signal", "sev": "info", "variants": ["pls stop", "stop it", "leave me alone"], "date": "1 Oct"},
+    {"term": "mat karo", "cat": "Refusal signal", "sev": "info", "variants": ["mat kar", "mt karo", "bas karo", "rehne do"], "date": "1 Oct"},
+    {"term": "bhaiya", "cat": "Refusal signal", "sev": "info", "variants": ["bhaiyya", "bhaiyaa", "bhaiya ji"], "date": "1 Oct"},
+    {"term": "baat nahi karni", "cat": "Refusal signal", "sev": "info", "variants": ["baat nhi karni", "mujhse door raho"], "date": "1 Oct"},
+    {"term": "ch@pri", "cat": "Bullying", "sev": "warn", "variants": ["chapri", "chhapri", "ch4pri"], "date": "1 Oct"},
+    {"term": "randi", "cat": "Bullying", "sev": "high", "variants": ["r@ndi", "randii"], "date": "1 Oct"},
+    {"term": "bitch", "cat": "Bullying", "sev": "high", "variants": ["b1tch", "biatch", "bich"], "date": "1 Oct"},
+    {"term": "slut", "cat": "Bullying", "sev": "high", "variants": ["sl*t", "slutty"], "date": "1 Oct"},
+    {"term": "kaali kalooti", "cat": "Bullying", "sev": "warn", "variants": ["kali kaluti"], "date": "1 Oct"},
+    {"term": "viral kar dunga", "cat": "Sextortion", "sev": "critical", "variants": ["viral kr dunga", "viral krdunga", "viral kar denge"], "date": "1 Oct"},
+    {"term": "photo sabko bhej dunga", "cat": "Sextortion", "sev": "critical", "variants": ["pic sabko bhej dunga", "photo leak kar dunga"], "date": "1 Oct"},
+    {"term": "paise bhej", "cat": "Extortion", "sev": "high", "variants": ["paisa bhej", "pese bhej", "upi kar"], "date": "1 Oct"},
+    {"term": "kys", "cat": "Self-harm incitement", "sev": "critical", "variants": ["kill urself", "kill yourself", "mar ja"], "date": "1 Oct"},
+    {"term": "maal", "cat": "Sexual harassment", "sev": "high", "variants": ["m@al"], "date": "1 Oct"},
+    {"term": "send nudes", "cat": "Sexual harassment", "sev": "high", "variants": ["n00dz", "nudez", "send pics na", "nangi pic"], "date": "1 Oct"},
+    {"term": "🍆🍑", "cat": "Sexual harassment", "sev": "high", "variants": [], "date": "1 Oct"},
+    {"term": "where r u now", "cat": "Stalking", "sev": "warn", "variants": ["kahan ho abhi", "wru", "send location"], "date": "1 Oct"},
+    {"term": "ghar aa jaunga", "cat": "Threat", "sev": "high", "variants": ["ghar pe aaunga", "ghr aa jaunga"], "date": "1 Oct"},
+    {"term": "acid daal dunga", "cat": "Threat", "sev": "critical", "variants": ["acid fek dunga"], "date": "1 Oct"}
+  ]
+}

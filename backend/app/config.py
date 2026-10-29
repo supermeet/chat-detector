@@ -53,6 +53,8 @@ class Settings:
     FRONTEND_PATH = Path(_get("SAFESPHERE_FRONTEND", str(ROOT_DIR / "frontend" / "index.html")))
     # the simulated live chatroom for the browser-extension demo, served at /chatroom
     CHATROOM_DIR = Path(_get("SAFESPHERE_CHATROOM", str(ROOT_DIR / "chatroom")))
+    # adaptive slang list: seed file, reloaded when it changes (no restart, no retraining)
+    LEXICON_PATH = Path(_get("SAFESPHERE_LEXICON", str(BACKEND_DIR / "lexicon" / "seed.json")))
 
 
 settings = Settings()

@@ -48,6 +48,18 @@ it, scores the messages aimed at you with the same engine (per member **and** pe
 alerts, blurs and guides you. Demo on the simulated chatroom at **http://localhost:8000/chatroom/**. Setup, scenarios
 and tests: `extension/README.md`.
 
+## Slang that keeps up (PS deliverable 3)
+The word list (`backend/lexicon/seed.json` + the **Word list** screen) works next to the text model:
+**final label = max(model, word list)**, ranked by harm, so a new insult or code word counts immediately, with no retraining.
+- **Normalisation** catches obfuscated spellings: `ch4pri`, `c h a p r i`, `chaaapri`, `b.i.t.c.h` all match `chapri`/`bitch`.
+- **It learns new slang by itself.** The behaviour model catches harassment from patterns even without known bad
+  words. Words that keep appearing in those flagged chats, from 2+ different senders and never in safe chats, are
+  proposed automatically (`Auto`). In the demo, the pile-on teaches it **"behenji"**.
+- **Three more ways in:** "Missed this" on a message, "+ Add term", and editing the seed file, which reloads on save.
+  Approved terms get their leetspeak/spacing variants added automatically (AI suggestions optional, term only).
+- **A person approves every new term**, so harassers can't teach it to flag innocent words. "Refusal signal" terms
+  ("bas karo", "bhaiya") also teach the reply classifier what a "no" looks like, unless the reply reads as playful.
+
 ## Connecting the deepfake models
 Set `DEEPFAKE_MODE`, `DEEPFAKE_URL` and `DEEPFAKE_API_KEY` in `backend/.env` (see `.env.example`). No code changes are
 needed. Until then a stub returns placeholder scores, clearly marked "demo values" in the UI. Contract: `docs/API_CONTRACT.md` §2.

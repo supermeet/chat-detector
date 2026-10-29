@@ -1387,6 +1387,7 @@ class Component extends DCLogic {
       });
       await this.refreshPeople();
       this.loadLiveMetrics();
+      this.loadLexicon();
     } catch (e) {
       this.setState({ live: false, conn: { status: 'offline', base: SSApi.base(), error: String((e && e.message) || e) } });
     }
@@ -1859,6 +1860,12 @@ class Component extends DCLogic {
         if (this.state.screen !== 'feed') st.unread = this.state.unread + newAlerts.length;
       }
       this.setState(st);
+      if (r.new_slang && r.new_slang.length) {   // behaviour taught the word list something new
+        this.loadLexicon();
+        if (!newAlerts.some((a) => a.sev === 'critical')) {
+          this.showToast('Possible new slang learned from flagged chats: "' + r.new_slang.map((x) => x.term).join('", "') + '". Review it in the word list.', { label: 'Review', action: () => this.go('slang') });
+        }
+      }
       const crit = newAlerts.find((a) => a.sev === 'critical');
       if (crit) {
         this.showToast('Critical: ' + crit.cat.toLowerCase() + ' from ' + crit.from + '. Don\'t reply.', { label: 'Get help', action: () => this.openPanic(crit.pid), sev: 'critical', ms: 8000 });
@@ -2302,6 +2309,25 @@ class Component extends DCLogic {
   norm(w) { return w.toLowerCase().replace(/@/g, 'a').replace(/4/g, 'a').replace(/0/g, 'o').replace(/1/g, 'i').replace(/3/g, 'e').replace(/\$/g, 's').replace(/[^a-zऀ-ॿ ]/g, ''); }
   setSlang(patch) { this.setState({ slang: Object.assign({}, this.state.slang, patch) }); }
 
+  /* live mode: the word list lives in the backend (seed file + approved terms + review queue) */
+  async loadLexicon() {
+    if (!this.state.live) return;
+    try {
+      const L = await SSApi.get('/lexicon');
+      const ft = (t) => Object.assign({}, t, { variants: (t.variants || []).join(', ') || '-' });
+      this.setSlang({ terms: L.terms.map(ft), pending: L.pending, log: L.log.length ? L.log : this.state.slang.log });
+      this.testSlangLive(this.state.slang.test);
+    } catch (e) { this.liveFail(e, 'Word list'); }
+  }
+  testSlangLive(text) {
+    clearTimeout(this.slangTimer);
+    this.slangTimer = setTimeout(() => SSApi.post('/lexicon/test', { text: text || '' })
+      .then((r) => this.setSlang({ liveTest: r })).catch(() => {}), 250);
+  }
+  async slangCall(fn, ok) {
+    try { await fn(); await this.loadLexicon(); if (ok) this.showToast(ok); } catch (e) { this.liveFail(e, 'Word list'); }
+  }
+
   renderVals() {
     const S = this.state, D = this.D, SEV = D.SEV;
     const T = D.T[S.lang];
@@ -2417,7 +2443,7 @@ class Component extends DCLogic {
         hasWhy: !!m.why && m.sev !== 'info' && !m.safe, why: m.why,
         clean: m.sev === 'info' && !m.safe, canNotHarass: m.sev !== 'info' && !m.safe, markedSafe: !!m.safe,
         notHarass: () => this.notHarass(m),
-        missed: () => { const sl = S.slang; this.setState({ slang: Object.assign({}, sl, { pending: sl.pending.concat([{ term: m.text.split(' ').slice(0, 3).join(' '), cat: 'Bullying', sev: 'warn', src: 'User', note: 'From a message you flagged as missed.' }]) }), feedback: S.feedback + 1 }); this.showToast('Logged as missed. Sent words to the Slang List for review.', { label: 'Open', action: () => this.go('slang') }); },
+        missed: () => { if (S.live) { const term = (m.text || '').split(' ').slice(0, 3).join(' '); this.setState({ feedback: S.feedback + 1 }); this.slangCall(() => SSApi.post('/lexicon/pending', { term, src: 'User', note: 'From a message you flagged as missed.' }), 'Logged as missed. Sent words to the word list for review.'); return; } const sl = S.slang; this.setState({ slang: Object.assign({}, sl, { pending: sl.pending.concat([{ term: m.text.split(' ').slice(0, 3).join(' '), cat: 'Bullying', sev: 'warn', src: 'User', note: 'From a message you flagged as missed.' }]) }), feedback: S.feedback + 1 }); this.showToast('Logged as missed. Sent words to the Slang List for review.', { label: 'Open', action: () => this.go('slang') }); },
         checkMedia: () => { this.useSample('Pay ₹20,000 by tonight or this goes to your family and your college group.'); this.go('media'); }
       })),
       noAlerts: S.alerts.length === 0,
@@ -2632,18 +2658,36 @@ class Component extends DCLogic {
       setFCat: (e) => this.setSlang({ form: Object.assign({}, SL.form, { cat: e.target.value }) }),
       setFSev: (e) => this.setSlang({ form: Object.assign({}, SL.form, { sev: e.target.value }) }),
       setVar: (e) => this.setSlang({ form: Object.assign({}, SL.form, { variants: e.target.value }) }),
-      suggest: () => { const t = SL.form.term.trim(); if (!t) { this.showToast('Type a term first.'); return; } const v = [t.replace(/a/g, '@'), t.replace(/o/g, '0').replace(/i/g, '1'), t.replace(/(.)/, '$1$1'), t.replace(/ /g, '')].filter((x, i, a) => x !== t && a.indexOf(x) === i); this.setSlang({ form: Object.assign({}, SL.form, { variants: v.join(', ') }) }); this.showToast('Suggested ' + v.length + ' variants. Edit them before saving.'); },
-      save: () => { const f = SL.form; if (!f.term.trim()) { this.showToast('Type a term first.'); return; } this.setSlang({ terms: [{ term: f.term.trim(), cat: f.cat, sev: f.sev, variants: f.variants || '-', src: 'User', date: 'Today' }].concat(SL.terms), adding: false, form: { term: '', cat: 'Bullying', sev: 'warn', variants: '' }, log: [{ t: 'Added "' + f.term.trim() + '"', when: 'just now' }].concat(SL.log) }); this.showToast('Added "' + f.term.trim() + '" to the Slang List.'); },
+      suggest: () => { const t = SL.form.term.trim(); if (!t) { this.showToast('Type a term first.'); return; }
+        if (S.live) { SSApi.post('/lexicon/suggest', { term: t }).then((r) => { this.setSlang({ form: Object.assign({}, this.state.slang.form, { variants: r.variants.join(', ') }) }); this.showToast('Suggested ' + r.variants.length + ' variants (' + (r.source === 'rules' ? 'spelling rules' : 'AI + spelling rules, AI saw only the term') + '). Edit them before saving.'); }).catch((e) => this.liveFail(e, 'Suggest')); return; }
+        const v = [t.replace(/a/g, '@'), t.replace(/o/g, '0').replace(/i/g, '1'), t.replace(/(.)/, '$1$1'), t.replace(/ /g, '')].filter((x, i, a) => x !== t && a.indexOf(x) === i); this.setSlang({ form: Object.assign({}, SL.form, { variants: v.join(', ') }) }); this.showToast('Suggested ' + v.length + ' variants. Edit them before saving.'); },
+      save: () => { const f = SL.form; if (!f.term.trim()) { this.showToast('Type a term first.'); return; }
+        if (S.live) {
+          const body = { term: f.term.trim(), cat: f.cat, sev: f.sev, variants: (f.variants || '').split(',').map((x) => x.trim()).filter((x) => x && x !== '-') };
+          const blank = { term: '', cat: 'Bullying', sev: 'warn', variants: '' };
+          this.setSlang({ adding: false, form: blank });
+          this.slangCall(() => f.pid ? SSApi.post('/lexicon/pending/' + f.pid + '/approve', body) : SSApi.post('/lexicon/terms', body), 'Added "' + body.term + '". It applies now, no retraining.');
+          return;
+        }
+        this.setSlang({ terms: [{ term: f.term.trim(), cat: f.cat, sev: f.sev, variants: f.variants || '-', src: 'User', date: 'Today' }].concat(SL.terms), adding: false, form: { term: '', cat: 'Bullying', sev: 'warn', variants: '' }, log: [{ t: 'Added "' + f.term.trim() + '"', when: 'just now' }].concat(SL.log) }); this.showToast('Added "' + f.term.trim() + '" to the Slang List.'); },
       terms: allTerms.filter((t) => (!SL.cat || t.cat === SL.cat) && (!SL.q || (t.term + ' ' + t.variants).toLowerCase().indexOf(SL.q.toLowerCase()) >= 0)).map((t) => ({ term: t.term, cat: t.cat, sevClass: SEV[t.sev].cls, sevLabel: SEV[t.sev].label, variants: t.variants, src: t.src, date: t.date })),
       noPending: SL.pending.length === 0,
-      pending: SL.pending.map((p, i) => ({ term: p.term, src: p.src, note: p.note,
+      pending: SL.pending.map((p, i) => S.live ? ({ term: p.term, src: p.src, note: p.note,
+        approve: () => this.slangCall(() => SSApi.post('/lexicon/pending/' + p.id + '/approve', {}), 'Approved "' + p.term + '" with its common spellings.'),
+        reject: () => this.slangCall(() => SSApi.post('/lexicon/pending/' + p.id + '/reject'), 'Rejected "' + p.term + '". It won\'t be suggested again.'),
+        edit: () => this.setSlang({ adding: true, form: { term: p.term, cat: p.cat, sev: p.sev, variants: '', pid: p.id } })
+      }) : ({ term: p.term, src: p.src, note: p.note,
         approve: () => this.setSlang({ terms: [{ term: p.term, cat: p.cat, sev: p.sev, variants: '-', src: p.src, date: 'Today' }].concat(SL.terms), pending: SL.pending.filter((_, j) => j !== i), log: [{ t: 'Approved "' + p.term + '"', when: 'just now' }].concat(SL.log) }),
         reject: () => this.setSlang({ pending: SL.pending.filter((_, j) => j !== i), log: [{ t: 'Rejected "' + p.term + '"', when: 'just now' }].concat(SL.log) }),
         edit: () => this.setSlang({ adding: true, form: { term: p.term, cat: p.cat, sev: p.sev, variants: '' }, pending: SL.pending.filter((_, j) => j !== i) })
       })),
-      test: SL.test, setTest: (e) => this.setSlang({ test: e.target.value }),
-      tokens: words.map((w, i) => ({ w, style: hit[i] ? 'background: ' + sevBg[hit[i].sev] + '; border-radius: 4px; padding: 1px 3px; font-weight: 800' : '' })),
-      matchText: matched.length ? 'Matched: ' + matched.map((m) => m.term + ' (' + m.cat + ', ' + SEV[m.sev].label + ')').join(' · ') : 'No terms matched.',
+      test: SL.test, setTest: (e) => { this.setSlang({ test: e.target.value }); if (S.live) this.testSlangLive(e.target.value); },
+      tokens: (S.live && SL.liveTest)
+        ? SL.liveTest.tokens.map((t) => ({ w: t.w, style: t.hit ? 'background: var(--high-bg); border-radius: 4px; padding: 1px 3px; font-weight: 800' : '' }))
+        : words.map((w, i) => ({ w, style: hit[i] ? 'background: ' + sevBg[hit[i].sev] + '; border-radius: 4px; padding: 1px 3px; font-weight: 800' : '' })),
+      matchText: (S.live && SL.liveTest)
+        ? (SL.liveTest.matches.length ? 'Matched: ' + SL.liveTest.matches.map((m) => m.term + ' (' + m.cat + ', ' + SEV[m.sev].label + ')').join(' · ') : 'No terms matched.') + ' · Message read as: ' + (SL.liveTest.label || 'unknown')
+        : (matched.length ? 'Matched: ' + matched.map((m) => m.term + ' (' + m.cat + ', ' + SEV[m.sev].label + ')').join(' · ') : 'No terms matched.'),
       log: SL.log.slice(0, 5)
     };
 

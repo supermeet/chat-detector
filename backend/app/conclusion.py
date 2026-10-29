@@ -134,6 +134,17 @@ def _gemini(facts):
                 caution=str(out.get("caution", "Automated analysis, not legal advice.")))
 
 
+def suggest_variants(term):
+    """Spelling / code-word variants of ONE slang term. Gemini receives only the term."""
+    prompt = ("List up to 6 spellings, leetspeak or code-word variants that people in India use online to dodge "
+              "filters for this Hinglish/English slang term. Return a JSON array of strings only.\nTERM: %s"
+              % json.dumps(term, ensure_ascii=False))
+    body = dict(contents=[dict(role="user", parts=[dict(text=prompt)])],
+                generationConfig=dict(temperature=0.3, responseMimeType="application/json"))
+    out = json.loads(_call(settings.GEMINI_FALLBACK_MODEL or settings.GEMINI_MODEL, body))
+    return [str(v).strip() for v in out if isinstance(v, (str, int)) and str(v).strip()][:6]
+
+
 def conclude(pid):
     facts, pack = case_facts(pid)
     fingerprint = hashlib.sha256(json.dumps(facts, sort_keys=True, default=str).encode()).hexdigest()
