@@ -50,6 +50,7 @@ class Person:
     trusted: bool = False
     minor_involved: bool = False
     is_group: bool = False
+    is_room: bool = False             # a live chatroom: all members' messages aimed at the user, scored together
     result: Optional[dict] = None     # last score from the behaviour model
     rejected_links: set = field(default_factory=set)
 
@@ -92,6 +93,7 @@ class Store:
             self.alerts: dict[int, Alert] = {}
             self.media: dict[int, MediaCheck] = {}
             self.feedback: list[dict] = []
+            self.rooms: dict[str, str] = {}   # room name -> room person id
             self._msg_ids = itertools.count(1)
             self._alert_ids = itertools.count(1)
             self._media_ids = itertools.count(1)

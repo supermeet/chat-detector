@@ -51,6 +51,8 @@ class Settings:
 
     # the built UI (frontend/build.py) served at "/"
     FRONTEND_PATH = Path(_get("SAFESPHERE_FRONTEND", str(ROOT_DIR / "frontend" / "index.html")))
+    # the simulated live chatroom for the browser-extension demo, served at /chatroom
+    CHATROOM_DIR = Path(_get("SAFESPHERE_CHATROOM", str(ROOT_DIR / "chatroom")))
 
 
 settings = Settings()
